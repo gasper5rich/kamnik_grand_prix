@@ -183,6 +183,8 @@ if(OPEN){NR.push(NR[N-1]);T.push(T[N-1]);K.push(K[N-1])}
 // ---- ena pot: Ljubljana -> avtocesta -> Trzin -> Domžale -> regionalna cesta -> Kamnik ----
 const FIN=L*(OPEN?.975:.972),MW0=OPEN?-1:L*.10,MW1=OPEN?1e12:L*.22,RADF=OPEN?[.07,.15,.25,.36,.47,.58,.69,.80,.90]:[.175,.29,.49,.675,.845],STF=OPEN?[.16,.37,.60,.82]:[.285,.52,.80];
 const REALKM=OPEN?117:22;
+const GAPS=OPEN?[[.09,.115],[.30,.325],[.47,.495],[.66,.685],[.84,.865]]:[];
+function inGap(s){for(const g of GAPS)if(s>=L*g[0]&&s<=L*g[1])return true;return false}
 const wrapS=s=>((s%L)+L)%L;
 function inMW(s){if(OPEN)return true;s=wrapS(s);return s>MW0&&s<MW1}
 function regW(s){if(OPEN)return 0;s=wrapS(s);if(s>=MW1-110&&s<MW1)return(s-(MW1-110))/110;if(s>=MW1&&s<L*.982)return 1;if(s>=L*.982)return 1-(s-L*.982)/(L*.018);return 0}
@@ -310,8 +312,10 @@ const PS=[];for(let i=0;i<N;i+=(OPEN?10:5))PS.push(P[i]);
 function trackD(x,z){let m=1e18;for(let i=0;i<PS.length;i++){const q=PS[i],dx=q.x-x,dz=q.z-z,d=dx*dx+dz*dz;if(d<m)m=d}return Math.sqrt(m)}
 const CX0=760,CZ0=420;
 function forestMaskF(x,z,h){return smooth(.46,.60,fbm(x*.0042+7,z*.0042+1.3,3))*(h>6?1:.55)}
+const LJP=OPEN?at(22/117*.975*L):null;
 function hillF(x,z,d){const flat=smooth(300,760,d),n1=Math.max(0,fbm(x*.0019+10,z*.0019+3,4)-.30)/.7,rg=1-Math.abs(2*fbm(x*.0012+50,z*.0012-20,3)-1),rc=OPEN?d+1500:Math.hypot(x-CX0,z-CZ0),far=smooth(2450,4300,rc);
- return -.3+flat*(n1*190+rg*rg*70*far)+far*far*210*(.35+.65*fbm(x*.0011-5,z*.0011+9,3))}
+ const hs=OPEN?.07+.93*(1-smooth(2500,6500,Math.hypot(x-LJP.x,z-LJP.z))):1;
+ return -.3+flat*(n1*190+rg*rg*70*far)*hs+far*far*210*(.35+.65*fbm(x*.0011-5,z*.0011+9,3))*hs}
 for(let iz=0;iz<TZn;iz++)for(let ix=0;ix<TXn;ix++){const x=TB.x0+ix*TDX,z=TB.z0+iz*TDZ,d=trackD(x,z),h=hillF(x,z,d),k=iz*TXn+ix;THt[k]=h;TDt[k]=d;FMk[k]=forestMaskF(x,z,h)}
 function gh(x,z){const fx=(x-TB.x0)/TDX,fz=(z-TB.z0)/TDZ;if(fx<0||fz<0||fx>=TB.nx||fz>=TB.nz)return-.3;const ix=Math.floor(fx),iz=Math.floor(fz),u=fx-ix,v=fz-iz,k=iz*TXn+ix;return THt[k]*(1-u)*(1-v)+THt[k+1]*u*(1-v)+THt[k+TXn]*(1-u)*v+THt[k+TXn+1]*u*v}
 function gd(x,z){const fx=(x-TB.x0)/TDX,fz=(z-TB.z0)/TDZ;if(fx<0||fz<0||fx>=TB.nx||fz>=TB.nz)return 9999;const ix=Math.floor(fx),iz=Math.floor(fz),u=fx-ix,v=fz-iz,k=iz*TXn+ix;return TDt[k]*(1-u)*(1-v)+TDt[k+1]*u*(1-v)+TDt[k+TXn]*(1-u)*v+TDt[k+TXn+1]*u*v}
@@ -341,7 +345,7 @@ ribbon(3.9,4.1,0.07,i=>RGI(i)?0xf4f4f0:(i%4<2?0xf4f4f0:null));ribbon(-4.1,-3.9,0
  const ok=i=>RGI(i)&&!nearSTI(i);ribbonTexR(4.45,W/2,.058,gm,9,ok);ribbonTexR(-W/2,-4.45,.058,gm,9,ok)}
 // avtocesta: betonska sredinska ograja in jeklene varnostne ograje
 {const con=new R.MeshStandardMaterial({color:0xbdbbb2,roughness:.9,metalness:0,side:R.DoubleSide}),stl=new R.MeshStandardMaterial({color:0xc9ced4,roughness:.35,metalness:.75,side:R.DoubleSide});
- const mw=i=>MWI(i),mwo=i=>MWI(i)&&!nearSTI(i);
+ const mw=i=>MWI(i)&&!inGap(i*ds),mwo=i=>MWI(i)&&!nearSTI(i);
  wallStrip(-.32,0,.55,mw,con);wallStrip(.32,0,.55,mw,con);wallStrip(-.16,.55,.9,mw,con);wallStrip(.16,.55,.9,mw,con);capStrip(-.16,.16,.9,mw,con);
  for(const sd of[-1,1]){wallStrip(sd*(W/2+1.0),.45,.82,i=>sd<0?mwo(i):mw(i),stl)}
  const pm=new R.InstancedMesh(new R.BoxGeometry(.14,.8,.14).translate(0,.4,0),stl,Math.ceil(N/2)+8),o=new R.Object3D();let n=0;
@@ -372,6 +376,7 @@ function roadSign(sf,txt,bg,fg,w,side){const s=at(L*sf),g=new R.Group(),off=(sid
  const t=new R.CanvasTexture(c);t.anisotropy=8;const sg=new R.Mesh(new R.BoxGeometry(w,1.7,.15),new R.MeshBasicMaterial({map:t}));sg.position.y=4.6;g.add(sg);g.position.set(s.x+s.tz*off,0,s.z-s.tx*off);g.rotation.y=Math.atan2(s.tx,s.tz);scene.add(g)}
 if(!OPEN){roadSign(.105,'🛣️ AVTOCESTA','#0f7a3e','#ffffff',5);roadSign(.145,'Trzin · Domžale  ↑','#0f7a3e','#ffffff',6);roadSign(.20,'Trzin  ↗  izvoz','#0f7a3e','#ffffff',5.5);roadSign(.217,'KONEC AVTOCESTE','#0f7a3e','#ffffff',5.5);
 roadSign(.262,'⛽ Petrol  →  izvoz','#0b4ea2','#ffffff',5);roadSign(.335,'Domžale  →','#0b4ea2','#ffffff',4.5);roadSign(.86,'Kamnik  ↑','#0b4ea2','#ffffff',4.5);}
+if(OPEN){GAPS.forEach(g=>roadSign(g[0]-.006,'↔ Odprta sredina','#0b4ea2','#ffffff',5.5));}
 if(OPEN){[[.012,'🛣️ AVTOCESTA  Kamnik → Trst',6.2],[.065,'Domžale  ↑','#',5],[.12,'Trzin · Ljubljana  ↑',0,6],[.175,'Ljubljana  ↑',0,5],[.285,'Vrhnika · Logatec  ↑',0,6],[.50,'Postojna  ↑  🦇',0,6],[.64,'Razdrto · Vipava',0,5.5],[.78,'Sežana · Trst  ↑',0,6],[.90,'Trst / Trieste  →',0,6]].forEach(a=>roadSign(a[0],a[1],'#0f7a3e','#ffffff',a[3]||a[2]))}
 // radarji: opozorilna tabla 220 m prej in radarski steber
 const RADS=RADF.map(f=>L*f);
@@ -595,6 +600,11 @@ if(OPEN){const KMF=k=>k/117*.975,mt=c=>new R.MeshLambertMaterial({color:c}),hg=n
  // Postojnska jama: skalnat portal + rjava turistična tabla
  {const q=P2(KMF(75.5),-(W/2+40)),g=new R.Group(),rk=mt(0x8a8478);box(26,18,10,0x8a8478,0,9,0,g);box(10,11,11,0x15130f,0,5.5,.4,g);box(7,6,10,0x7b766a,-10,3,0,g);box(8,5,9,0x7b766a,11,2.5,0,g);
   const sg=new R.Mesh(new R.BoxGeometry(14,3,.3),new R.MeshBasicMaterial({map:label('🦇 POSTOJNSKA JAMA',512,110,'#5a3418','#ffffff','bold 52px sans-serif')}));sg.position.set(0,20.5,5.2);g.add(sg);put(g,q);ring(q,[20,40])}
+ // Nanos: edini hrib z radijskim stolpom, malo za Postojno
+ {const q=P2(KMF(83),W/2+560),g=new R.Group(),hill=new R.Mesh(new R.SphereGeometry(1,48,24,0,6.283,0,1.5),new R.MeshPhongMaterial({color:0x5b9a48,flatShading:false,shininess:5}));hill.scale.set(760,400,560);hill.position.y=-50;g.add(hill);
+  const tw=new R.Group();for(let k=0;k<8;k++){const c=new R.Mesh(new R.CylinderGeometry(.9-k*.07,1.0-k*.07,7,10),mt(k%2?0xffffff:0xd23a3a));c.position.y=3.5+k*7;tw.add(c)}
+  const bx=new R.Mesh(hg,mt(0xcfd3d8));bx.scale.set(7,3.2,6);bx.position.set(3,1.6,0);tw.add(bx);const dish=new R.Mesh(new R.CylinderGeometry(2,.4,.6,12),mt(0xeeeeee));dish.position.set(0,44,1.2);dish.rotation.x=1.3;tw.add(dish);
+  tw.position.y=348;g.add(tw);put(g,q);townPts.push(q);ring(q,[30,80,160,260,380])}
  // Trst: morje, svetilnik, ladje
  {const f1=FIN/L,pos=[],idx=[];for(let k=0,d=FIN-1700;d<=FIN+120;d+=24,k++){const a=at(d);for(const o of[W/2+40,W/2+300])pos.push(a.x+a.tz*o,.16,a.z-a.tx*o);if(k>0){const b=(k-1)*2;idx.push(b,b+2,b+1,b+1,b+2,b+3)}}
   const sg=new R.BufferGeometry();sg.setAttribute('position',new R.Float32BufferAttribute(pos,3));sg.setIndex(idx);sg.computeVertexNormals();const nn=sg.attributes.normal;for(let i=0;i<nn.count;i++)if(nn.getY(i)<0)nn.setXYZ(i,-nn.getX(i),-nn.getY(i),-nn.getZ(i));
@@ -666,14 +676,14 @@ const arbBand=s=>OPEN?false:(s>.685*L&&s<.775*L);
   else if(kind===1){if(rn()<.27)col.setHex(autumn[rn()*5|0]).offsetHSL(rr(-.02,.02),0,rr(-.04,.05));else col.setHSL(rr(.19,.3),rr(.45,.62),rr(.22,.33));c.de.push([o.matrix.clone(),col.clone()])}
   else{o.scale.set(sc,sc*rr(.7,1.1),sc*rr(.9,1.4));o.updateMatrix();col.setHSL(rr(.22,.32),rr(.45,.62),rr(.13,.24));if(rn()<.12)col.setHex(autumn[rn()*5|0]);c.bu.push([o.matrix.clone(),col.clone()])}};
  // grmovje ob cesti
- for(let s=8;s<L;s+=rr(3.5,8)){const a=at(s);for(const side of[-1,1]){if(rn()<.35)continue;const off=side*(W/2+rr(8.2,17)),x=a.x+a.tz*off,z=a.z-a.tx*off;if(nearSt(x,z,30)||hasTown(x,z,9))continue;place(x,z,2,rr(.55,1.25))}}
+ for(let s=8;s<L;s+=rr(3.5,8)){const a=at(s);for(const side of[-1,1]){if(rn()<.35||(OPEN&&s>L*.655&&rn()<.92))continue;const off=side*(W/2+rr(8.2,17)),x=a.x+a.tz*off,z=a.z-a.tx*off;if(nearSt(x,z,30)||hasTown(x,z,9))continue;place(x,z,2,rr(.55,1.25))}}
  // gozd ob cesti: skupine dreves
  for(let tr=0,n=0;tr<(OPEN?95000:36000)&&n<(OPEN?13000:6000);tr++){const s=rr(0,L),a=at(s),side=rn()<.5?-1:1,off=side*(W/2+rr(17,230)),x=a.x+a.tz*off,z=a.z-a.tx*off,d=Math.abs(off)-W/2;
-  const cl=fbm(x*.016+3,z*.016+8,2),dens=d<45?(cl>.52?.8:.07):(cl>.5?.7:.1);if(rn()>dens)continue;
+  const cl=fbm(x*.016+3,z*.016+8,2),dens=d<45?(cl>.52?.8:.07):(cl>.5?.7:.1);if(rn()>dens)continue;if(OPEN&&s>L*.655)continue;
   if(trackD(x,z)<W/2+15||nearSt(x,z,32)||hasTown(x,z,11))continue;let bad=false;for(const f of fieldRects)if(Math.hypot(f.x-x,f.z-z)<f.r+4&&Math.abs((x-f.x)*Math.cos(f.yaw)-(z-f.z)*Math.sin(f.yaw))<f.w/2+4&&Math.abs((x-f.x)*Math.sin(f.yaw)+(z-f.z)*Math.cos(f.yaw))<f.d/2+4){bad=true;break}if(bad)continue;
   place(x,z,rn()<.5?0:1,rr(.75,1.65));n++}
  // gozd na gričih
- for(let tr=0,n=0;tr<(OPEN?220000:115000)&&n<(OPEN?15000:11500);tr++){const x=OPEN?rr(TB.x0+900,TB.x1-900):rr(-3500,5050),z=OPEN?rr(TB.z0+900,TB.z1-900):rr(-3000,3850),d=gd(x,z);if(d<260||d>2700)continue;const fm=gf(x,z);if(rn()>fm*1.05)continue;place(x,z,rn()<.72?0:1,rr(.9,2.3));n++}
+ for(let tr=0,n=0;tr<(OPEN?220000:115000)&&n<(OPEN?15000:11500);tr++){const x=OPEN?rr(TB.x0+900,TB.x1-900):rr(-3500,5050),z=OPEN?rr(TB.z0+900,TB.z1-900):rr(-3000,3850),d=gd(x,z);if(d<260||d>2700)continue;const fm=gf(x,z);if(rn()>fm*1.05)continue;if(OPEN){let bi=0,bd=1e18;for(let q=0;q<PS.length;q++){const dx=PS[q].x-x,dz=PS[q].z-z,dd=dx*dx+dz*dz;if(dd<bd){bd=dd;bi=q}}if(bi*10/N>.655)continue}place(x,z,rn()<.72?0:1,rr(.9,2.3));n++}
  // gradnja
  const spM=mkMat(),deM=mkMat(),buM=mkMat(),trM=detailBump(new R.MeshStandardMaterial({color:0x5b3d24,roughness:.95}),1.5,.12),bushLow=jit(new R.IcosahedronGeometry(1,1).scale(1.1,.8,1.1).translate(0,.45,0),.3);
  for(const c of cmap.values()){const dist=trackD(c.x,c.z),far=dist>520,hi=[],lo=[];
@@ -697,8 +707,8 @@ const arbBand=s=>OPEN?false:(s>.685*L&&s<.775*L);
  for(let i=0;i<(OPEN?0:58);i++){const ex=i>=44,a=ex?rr(-.9,.9)+Math.atan2(at(FIN).z-czm,at(FIN).x-cxm):i/44*6.283+rr(-.05,.05),r=ex?rr(3000,4200):rr(3900,4700);let x=cxm+Math.cos(a)*r,z=czm+Math.sin(a)*r;
   const nt=nearTr(x,z),fq=Math.pow(Math.min(1,nt.f/.9),1.3),dd=(3700-fq*2500)*rr(.85,1.15),vx=x-nt.q.x,vz=z-nt.q.z,vl=Math.hypot(vx,vz)||1;
   x=nt.q.x+vx/vl*dd;z=nt.q.z+vz/vl*dd;const h=rr(520,1150)*(1+.35*fq),w=rr(520,820),m=new R.Mesh(mountain(w,h,i*17+3),mgM);m.position.set(x,gh(x,z)-30,z);m.rotation.y=rr(0,6);m.userData.nc=1;scene.add(m)}
- if(OPEN){const G=[];for(let k=0;k<14;k++)G.push(mountain(rr(520,820),rr(520,1150),k*29+5));
-  for(let i=0;i<120;i++){const f=i/120,q=at(f*L),sd=i%2?1:-1,dist=rr(2300,4300),x=q.x+q.tz*sd*dist,z=q.z-q.tx*sd*dist,sc=rr(.8,1.3)*(1+.3*Math.sin(f*9)),m=new R.Mesh(G[rn()*14|0],mgM);m.position.set(x,gh(x,z)-30,z);m.scale.set(sc,sc*rr(.9,1.4),sc);m.rotation.y=rr(0,6);m.userData.nc=1;scene.add(m)}}}
+ if(OPEN){const G=[];for(let k=0;k<8;k++)G.push(mountain(rr(520,820),rr(520,1050),k*29+5));
+  for(let i=0;i<26;i++){const f=.12+i/26*.15,q=at(f*L),sd=i%2?1:-1,dist=rr(2300,4300),x=q.x+q.tz*sd*dist,z=q.z-q.tx*sd*dist,sc=rr(.8,1.3)*(1+.3*Math.sin(f*9)),m=new R.Mesh(G[rn()*8|0],mgM);m.position.set(x,gh(x,z)-30,z);m.scale.set(sc,sc*rr(.9,1.4),sc);m.rotation.y=rr(0,6);m.userData.nc=1;scene.add(m)}}}
 
 // oblaki ob poti (2. stopnja)
 if(OPEN){for(let i=0;i<70;i++){const q=at(rr(0,L)),sd=rn()<.5?-1:1,o=sd*rr(300,3500),s2=new R.Sprite(cloudMats[i%4]);s2.position.set(q.x+q.tz*o,rr(700,1700),q.z-q.tx*o);const w=rr(1100,2100);s2.scale.set(w,w*.46,1);s2.renderOrder=-5;scene.add(s2);clouds.push(s2)}}
@@ -941,7 +951,7 @@ function simPlayer(dt){const p=player,done=state==='done',cr=p.crashT>0;
  const sv=steer*16/(1+p.v*.035)+(p.flat?Math.sin(performance.now()/105)*2.4*Math.min(1,p.v/12):0),dr=-k*p.v*p.v*.14;
  p.lv+=(sv+dr-p.lv)*Math.min(1,dt*8);p.x+=p.lv*dt;
  if(Math.abs(p.x)>W/2+22){p.x=Math.sign(p.x)*(W/2+22);p.v*=.97;p.lv=0}
-  if(inMW(p.dist)&&p.crashT<=0){if(p.x>-.75){p.x=-.75;if(p.lv>0)p.lv=-p.lv*.25;p.v*=Math.exp(-1.2*dt);if(!p.rail){p.rail=1;sfx('bad');msg('🚧 Sredinska ograja – avtocesta',1200)}}else p.rail=0;
+  if(inMW(p.dist)&&p.crashT<=0){const gap=inGap(p.dist);if(p.x>W/2+.7&&!inSlip(p)){p.x=W/2+.7;if(p.lv>0)p.lv=-p.lv*.25;p.v*=Math.exp(-1.2*dt)}if(gap){p.rail=0}else if(p.x>-.75&&p.x<.75){const lf=p.x>.1;p.x=lf?.75:-.75;if(lf?p.lv<0:p.lv>0)p.lv=-p.lv*.25;p.v*=Math.exp(-1.2*dt);if(!p.rail){p.rail=1;sfx('bad');msg('🚧 Sredinska ograja – avtocesta',1200)}}else p.rail=0;
    if(p.x<-(W/2+.7)&&!inSlip(p)){p.x=-(W/2+.7);if(p.lv<0)p.lv=-p.lv*.25;p.v*=Math.exp(-1.2*dt)}}
  const d0=p.dist;p.dist+=p.v*dt;p.leanT=cl(-k*p.v*1.2-steer*.25,-.7,.7);p.off=off||shd;p.nOn=nOn;petrolCheck(dt);rbPush(p,dt);if(state==='race')radarCheck(d0,p);
  if(p.crashT>0){p.crashT-=dt;if(p.crashT<=0)afterCrash()}if(p.inv>0)p.inv-=dt;
@@ -1501,7 +1511,7 @@ function frame(now){const rdt=(now-last)/1000,dt=Math.min(.05,rdt);last=now;cons
   $('kmh').firstChild.nodeValue=Math.round(p.v*3.6);if(camMode===1)drawDash(Math.round(p.v*3.6),p);$('nb').style.width=p.nitro+'%';{const rg=$('nrg');rg.style.strokeDashoffset=100-p.nitro;rg.style.stroke=p.nitro<25?'#ff9f0a':''}$('vg').className=p.nOn?'n':'';
   $('pos').textContent='⭐ '+Math.floor(p.score);$('sc').textContent=ICO+' '+p.good+' · 🚗 '+p.near+' · ⚡ '+(p.boosts||0)+(p.combo>1?' · ×'+p.combo:'')+(p.flat?' · 🛞 PRAZNA max 90':p.glass?' · 🛞 '+p.glass+'/3':'');
   const rem=Math.max(0,(FIN-Math.max(0,p.dist))/FIN*REALKM);cakeG.visible=p.dist>FIN-1600;if(window.famG){famG.visible=cakeG.visible;if(famG.visible)famG.userData.w.forEach((a,i)=>{a.rotation.z=(i%2?1:-1)*(-2.5+.35*Math.sin(performance.now()/160+i*1.3))})}$('lap').textContent='🏁 '+rem.toFixed(1).replace('.',',')+(OPEN?' km do Trsta · ':' km do Kamnika · ')+fmt(raceT);
-  if(OPEN){if(state==='race'){const gl=GPLACES;let pi=-1;for(let i=0;i<gl.length;i++)if(p.dist>=L*gl[i][1]-60)pi=i;if(pi>(p.pl==null?-1:p.pl)){p.pl=pi;msg('📍 '+gl[pi][0],2200)}}}else{const sec=p.dist>=L*.885?3:p.dist>=MW1?2:p.dist>=MW0?1:0;if(state==='race'&&sec>(p.sec||0)){p.sec=sec;msg(['','🛣️ AVTOCESTA Ljubljana – Trzin','Konec avtoceste – Trzin, Domžale … regionalna cesta proti Kamniku','KAMNIK – torta čaka na cilju! 🎂'][sec],2600)}}
+  if(OPEN){if(state==='race'){const ig=inGap(p.dist);if(ig&&!p.ig)msg('↔ Odprta sredina – lahko prečkaš na drugo stran (×2 rožice, a nasproten promet!)',3200);p.ig=ig;const gl=GPLACES;let pi=-1;for(let i=0;i<gl.length;i++)if(p.dist>=L*gl[i][1]-60)pi=i;if(pi>(p.pl==null?-1:p.pl)){p.pl=pi;msg('📍 '+gl[pi][0],2200)}}}else{const sec=p.dist>=L*.885?3:p.dist>=MW1?2:p.dist>=MW0?1:0;if(state==='race'&&sec>(p.sec||0)){p.sec=sec;msg(['','🛣️ AVTOCESTA Ljubljana – Trzin','Konec avtoceste – Trzin, Domžale … regionalna cesta proti Kamniku','KAMNIK – torta čaka na cilju! 🎂'][sec],2600)}}
   {const ab=$('abs');if(ab)ab.style.visibility=p.abs?'visible':'hidden'}
   if(state==='race'&&!$('msg').textContent){if(p.off)msg(p.shd?'BANKINA':'IZVEN CESTE',300);else if(p.nOn)msg('POSPEŠEK!',250)}
   drawMM()}
