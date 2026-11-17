@@ -842,7 +842,7 @@ function radarCheck(d0,p){const kmh=Math.round(p.v*3.6);if(!p.radW)p.radW=new Se
 function radFlash(){let f=document.getElementById('rfl');if(!f){f=document.createElement('div');f.id='rfl';f.style.cssText='position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:5;transition:opacity .45s';document.body.appendChild(f)}f.style.transition='none';f.style.opacity='.85';void f.offsetWidth;f.style.transition='opacity .45s';f.style.opacity='0'}
 function fmt(t){return Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')}
 // ---------- lestvica, deljenje ----------
-const GAME_URL=(location.protocol.startsWith('http')?location.origin+location.pathname.replace(/index\.html$/,''):'https://kamnik-grand-prix-vse-najboljse-roman.netlify.app').replace(/\/$/,'');
+const GAME_URL=(location.protocol.startsWith('http')&&!/claude\.ai|claudeusercontent/.test(location.hostname)?location.origin+location.pathname.replace(/index\.html$/,''):'https://gasper5rich.github.io/kamnik_grand_prix').replace(/\/$/,'');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function lbGet(){try{const a=JSON.parse(localStorage.getItem('gpk_lb2')||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
 function lbSave(a){try{localStorage.setItem('gpk_lb2',JSON.stringify(a))}catch(e){}}
