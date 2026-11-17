@@ -415,6 +415,19 @@ const townPts=[],cakeF=[];let cakeG;
   cy(3.6,.3,0xffffff,.15);cy(3,1.6,0xf7c6d0,1.1);cy(2.2,1.4,0xfff1d6,2.6);cy(1.4,1.2,0xf7a8bd,3.9);
   for(let i=0;i<6;i++){const a=i/6*6.283,cx=Math.cos(a)*.9,cz=Math.sin(a)*.9,c=new R.Mesh(new R.CylinderGeometry(.1,.1,.9,6),mt(0xffe066)),f=new R.Mesh(new R.SphereGeometry(.17,8,8),new R.MeshBasicMaterial({color:0xffaa22}));c.position.set(cx,5.0,cz);f.position.set(cx,5.7,cz);g.add(c,f);cakeF.push(f)}
   
+  {const fam=new R.Group(),sk=0xf1c7a0,mk=(c)=>new R.MeshLambertMaterial({color:c,emissive:c,emissiveIntensity:.5}),
+    person=(name,x,tz,cloth,hair,pants,sc,wv)=>{const p=new R.Group(),bx=(w,h,d,c,px,py,pz,par)=>{const m=new R.Mesh(new R.BoxGeometry(w,h,d),mk(c));m.position.set(px,py,pz);(par||p).add(m);return m};
+      bx(.2,.8,.22,pants,-.12,.4,0);bx(.2,.8,.22,pants,.12,.4,0);bx(.5,.7,.28,cloth,0,1.15,0);
+      const hd=new R.Mesh(new R.SphereGeometry(.2,12,10),mk(sk));hd.position.set(0,1.72,0);p.add(hd);
+      const hr=new R.Mesh(new R.SphereGeometry(.215,12,10,0,6.283,0,1.9),mk(hair));hr.position.set(0,1.74,-.02);p.add(hr);
+      if(name!=='Milena'){bx(.16,.5,.12,hair,0,1.5,-.17)} else {bx(.4,.28,.1,hair,0,1.5,-.15)}
+      const arm=(sx,up)=>{const ag=new R.Group();ag.position.set(sx*.33,1.45,0);bx(.14,.6,.14,cloth,0,-.28,0,ag);const h2=new R.Mesh(new R.SphereGeometry(.08,8,8),mk(sk));h2.position.set(0,-.62,0);ag.add(h2);ag.rotation.z=up?sx*-2.7:sx*.15;p.add(ag);return ag};
+      const la=arm(-1,wv),ra=arm(1,true);if(wv)fam.userData.w.push(la);fam.userData.w.push(ra);
+      const c=document.createElement('canvas');c.width=256;c.height=72;const q=c.getContext('2d');q.fillStyle='rgba(255,255,255,.92)';q.beginPath();q.roundRect(4,6,248,60,18);q.fill();q.fillStyle='#c4175a';q.font='bold 40px sans-serif';q.textAlign='center';q.textBaseline='middle';q.fillText(name,128,38);
+      const tx=new R.CanvasTexture(c);tx.colorSpace=R.SRGBColorSpace||tx.colorSpace;const sp=new R.Sprite(new R.SpriteMaterial({map:tx,depthTest:false,transparent:true}));sp.scale.set(1.6,.45,1);sp.position.set(0,2.5,0);sp.renderOrder=9;p.add(sp);
+      const o=-(W/2+9),sa=at(FIN-70+x);p.scale.setScalar(sc);p.position.set(sa.x+sa.tz*o,0,sa.z-sa.tx*o);p.rotation.y=Math.atan2(-sa.tz,sa.tx)+0;p.lookAt(sa.x+sa.tz*(-(W/2)),1,sa.z-sa.tx*(-(W/2)));p.rotateY(0);fam.add(p);townPts.push({x:p.position.x,z:p.position.z})};
+    fam.userData.w=[];person('Milena',-11,0,0xd94f8c,0x6b3a1f,0x3a3f58,2.0,true);person('Anja',-16,0,0x3b8fd9,0xb8862b,0x2f3a52,1.9,true);person('Tjaša',-21,0,0xf0b429,0x3a2515,0x3a3f58,1.8,true);
+    fam.visible=false;scene.add(fam);window.famG=fam}
   cakeG=g;g.visible=false;g.scale.setScalar(2.2);g.position.set(s.x+s.tz*off,0,s.z-s.tx*off);g.rotation.y=Math.atan2(s.tx,s.tz);scene.add(g);townPts.push({x:g.position.x,z:g.position.z})}}
 // ---------- izvoz do Petrola (odcepni pas) ----------
 const SLIP_R=95,SLIP_Z=40,sst=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};
@@ -630,7 +643,10 @@ const arbBand=s=>s>.685*L&&s<.775*L;
     if(t>.68-up*.1||(t>.5&&up>.62&&r()<.55))c.setHex(0xf4f6fa).lerp(c2.setHex(0xc9d6e4),(1-up)*.6);
     for(let i=0;i<3;i++)tc.push(c.r,c.g,c.b)};q(A,C,B);q(B,C,D)}
   const g=new R.BufferGeometry();g.setAttribute('position',new R.Float32BufferAttribute(tri,3));g.setAttribute('color',new R.Float32BufferAttribute(tc,3));g.computeVertexNormals();return smoothAttrs(g,true)};
- for(let i=0;i<44;i++){const a=i/44*6.283+rr(-.05,.05),r=rr(3900,4700),h=rr(520,1150),w=rr(520,820),x=cxm+Math.cos(a)*r,z=czm+Math.sin(a)*r,m=new R.Mesh(mountain(w,h,i*17+3),mgM);m.position.set(x,gh(x,z)-30,z);m.rotation.y=rr(0,6);m.userData.nc=1;scene.add(m)}}
+ const nearTr=(x,z)=>{let bd=1e18,bs=0,bq=null;for(let j=0;j<=200;j++){const q=at(j/200*L),d=(q.x-x)**2+(q.z-z)**2;if(d<bd){bd=d;bs=j/200;bq=q}}return{f:bs,q:bq,d:Math.sqrt(bd)}};
+ for(let i=0;i<58;i++){const ex=i>=44,a=ex?rr(-.9,.9)+Math.atan2(at(FIN).z-czm,at(FIN).x-cxm):i/44*6.283+rr(-.05,.05),r=ex?rr(3000,4200):rr(3900,4700);let x=cxm+Math.cos(a)*r,z=czm+Math.sin(a)*r;
+  const nt=nearTr(x,z),fq=Math.pow(Math.min(1,nt.f/.9),1.3),dd=(3700-fq*2500)*rr(.85,1.15),vx=x-nt.q.x,vz=z-nt.q.z,vl=Math.hypot(vx,vz)||1;
+  x=nt.q.x+vx/vl*dd;z=nt.q.z+vz/vl*dd;const h=rr(520,1150)*(1+.35*fq),w=rr(520,820),m=new R.Mesh(mountain(w,h,i*17+3),mgM);m.position.set(x,gh(x,z)-30,z);m.rotation.y=rr(0,6);m.userData.nc=1;scene.add(m)}}
 
 // bottles
 const bottles=[],BT=[{n:'Cviček',v:10,c:0xb03a48,w:30},{n:'Laški rizling',v:25,c:0x8fbf5a,w:26},{n:'Teran',v:50,c:0x5a1226,w:18},{n:'Rebula',v:100,c:0xe8c75a,w:8},{n:'Penina',v:200,c:0x1f4d2e,w:0},{n:'Razbita',v:-60,c:0xaa2233,w:4,broken:1}];
@@ -841,8 +857,8 @@ function simPlayer(dt){const p=player,done=state==='done',cr=p.crashT>0;
  let acc=0;if(gas||nOn)acc=p.v<vmax?30*(1-p.v/vmax)+(nOn?34:0):-(p.v-vmax)*.5;else acc=-3-p.v*.02;
   const shd=isReg(p.dist)&&Math.abs(p.x)>4.55&&!inSlip(p);
   // ABS: tlak se hitro dvigne (občutljivo), pojemek kot pri pravem motorju (~1,2 g), ABS pulzira na meji oprijema
-  p.bp=(p.bp||0)+((brk?1:0)-(p.bp||0))*Math.min(1,dt*(brk?16:22));p.abs=false;
-  if(p.bp>.02&&p.v>0){const lean=Math.min(1,Math.abs(k*p.v*p.v)/9),grip=(off?.5:shd?.62:1)*(1-.38*lean);let dec=12.2*p.bp*grip;
+  p.bp=(p.bp||0)+((brk?1:0)-(p.bp||0))*Math.min(1,dt*(brk?30:24));p.abs=false;
+  if(p.bp>.02&&p.v>0){const lean=Math.min(1,Math.abs(k*p.v*p.v)/9),grip=(off?.5:shd?.62:1)*(1-.38*lean);let dec=(27+p.v*.07)*p.bp*grip;
    if(p.bp>.8&&p.v>3){p.abs=true;dec*=.9+.1*Math.sin(performance.now()/1000*2*Math.PI*13);p.absT=(p.absT||0)+dt;if(p.absT>.075){p.absT=0;sfx('abs')}}
    acc-=dec+(gas?30*(1-p.v/vmax):0)*p.bp}
   if(off&&p.v>28)acc-=(p.v-28)*1.6;if(shd&&p.v>25)acc-=(p.v-25)*.9;p.shd=shd;
@@ -1399,7 +1415,7 @@ function frame(now){const rdt=(now-last)/1000,dt=Math.min(.05,rdt);last=now;cons
  hudT+=dt;if(hudT>.05){hudT=0;
   $('kmh').firstChild.nodeValue=Math.round(p.v*3.6);if(camMode===1)drawDash(Math.round(p.v*3.6),p);$('nb').style.width=p.nitro+'%';{const rg=$('nrg');rg.style.strokeDashoffset=100-p.nitro;rg.style.stroke=p.nitro<25?'#ff9f0a':''}$('vg').className=p.nOn?'n':'';
   $('pos').textContent='⭐ '+Math.floor(p.score);$('sc').textContent='🍷 '+p.good+' · 🚗 '+p.near+' · ⚡ '+(p.boosts||0)+(p.combo>1?' · ×'+p.combo:'')+(p.flat?' · 🛞 PRAZNA max 90':p.glass?' · 🛞 '+p.glass+'/3':'');
-  const rem=Math.max(0,(FIN-Math.max(0,p.dist))/FIN*22);cakeG.visible=p.dist>FIN-1600;$('lap').textContent='🏁 '+rem.toFixed(1).replace('.',',')+' km do Kamnika · '+fmt(raceT);
+  const rem=Math.max(0,(FIN-Math.max(0,p.dist))/FIN*22);cakeG.visible=p.dist>FIN-1600;if(window.famG){famG.visible=cakeG.visible;if(famG.visible)famG.userData.w.forEach((a,i)=>{a.rotation.z=(i%2?1:-1)*(-2.5+.35*Math.sin(performance.now()/160+i*1.3))})}$('lap').textContent='🏁 '+rem.toFixed(1).replace('.',',')+' km do Kamnika · '+fmt(raceT);
   {const sec=p.dist>=L*.885?3:p.dist>=MW1?2:p.dist>=MW0?1:0;if(state==='race'&&sec>(p.sec||0)){p.sec=sec;msg(['','🛣️ AVTOCESTA Ljubljana – Trzin','Konec avtoceste – Trzin, Domžale … regionalna cesta proti Kamniku','KAMNIK – torta čaka na cilju! 🎂'][sec],2600)}}
   {const ab=$('abs');if(ab)ab.style.visibility=p.abs?'visible':'hidden'}
   if(state==='race'&&!$('msg').textContent){if(p.off)msg(p.shd?'BANKINA':'IZVEN CESTE',300);else if(p.nOn)msg('POSPEŠEK!',250)}
