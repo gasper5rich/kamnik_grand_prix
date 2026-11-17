@@ -1,11 +1,9 @@
 GRAND PRIX KAMNIK - objava na GitHub Pages
 ==========================================
 
-V tej mapi je vse, kar igra potrebuje, razen glasbe:
-  index.html, three.min.js, sw.js, manifest.webmanifest, ikone (png)
-
-PRED OBJAVO: v mapo dodaj svojo datoteko music.mp3 (iz stare mape za Netlify).
-Brez nje igra deluje, le glasbe v meniju ni.
+V tej mapi je vse, kar igra potrebuje:
+  index.html, three.min.js, music.mp3, sw.js, manifest.webmanifest, ikone (png)
+Ikone za bližnjico na namizju/telefonu so narejene iz naslovne slike igre.
 
 1. Na https://github.com/signup ustvari brezplačen račun (če ga še nimaš).
 2. Desno zgoraj klikni + > New repository.
@@ -25,7 +23,7 @@ Brez nje igra deluje, le glasbe v meniju ni.
 POSODOBITEV IGRE
 - V repozitoriju klikni Add file > Upload files in povleci novo index.html
   (stara se zamenja). Commit changes.
-- V sw.js povečaj številko različice (gp-kamnik-v1 > gp-kamnik-v2),
+- V sw.js povečaj številko različice (npr. gp-kamnik-v3 > gp-kamnik-v4),
   da telefoni, ki so igro že namestili, naložijo novo različico.
 
 LASTNA DOMENA (neobvezno)
