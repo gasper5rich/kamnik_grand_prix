@@ -876,7 +876,7 @@ let panelPrev=null;
 function panelOpen(html){const cardVis=$('card').style.display==='block';panelPrev=cardVis?$('card').innerHTML:null;$('cover').style.display='none';$('card').style.display='block';$('ov').style.display='flex';$('card').innerHTML=html}
 function panelBack(){if(panelPrev===null)showCover();else{$('card').innerHTML=panelPrev;if(panelPrev.indexOf('id="go"')>=0)$('go').onclick=start}panelPrev=null}
 // ---------- splošna lestvica (Firebase Realtime Database, REST – enako kot pri kvizu) ----------
-const GLB={url:'https://roman60-bf5de-default-rtdb.europe-west1.firebasedatabase.app',path:'/gp/scores'};
+const GLB={url:'https://kamnikgrandprix-default-rtdb.europe-west1.firebasedatabase.app',path:'/gp/scores'};
 const gUrl=(p,q)=>GLB.url+GLB.path+(p||'')+'.json'+(q||'');
 function gPid(){try{let v=localStorage.getItem('gpk_pid');if(!v){v='p'+Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);localStorage.setItem('gpk_pid',v)}return v}catch(e){return'p'+Math.random().toString(36).slice(2,12)}}
 let gSend=false,gRetry=null;
