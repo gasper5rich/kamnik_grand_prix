@@ -1,0 +1,25 @@
+{
+  "rules": {
+    "races": {
+      "$race": {
+        ".read": true,
+        "teams": {
+          "$team": {
+            ".write": true,
+            ".validate": "newData.hasChildren(['name', 'score', 'answered', 'startedAt']) && newData.child('name').isString() && newData.child('name').val().length <= 28 && newData.child('score').isNumber() && newData.child('score').val() >= 0 && newData.child('score').val() <= 100 && newData.child('answered').isNumber() && newData.child('answered').val() <= 10"
+          }
+        }
+      }
+    },
+    "gp": {
+      "scores": {
+        ".read": true,
+        ".indexOn": ["score"],
+        "$id": {
+          ".write": "!data.exists() || newData.child('score').val() >= data.child('score').val()",
+          ".validate": "newData.hasChildren(['name', 'score', 'time']) && newData.child('name').isString() && newData.child('name').val().length >= 1 && newData.child('name').val().length <= 16 && newData.child('score').isNumber() && newData.child('score').val() >= 0 && newData.child('score').val() <= 100000 && newData.child('time').isNumber() && newData.child('time').val() >= 0 && newData.child('time').val() <= 7200"
+        }
+      }
+    }
+  }
+}
