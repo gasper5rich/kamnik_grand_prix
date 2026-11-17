@@ -23,7 +23,7 @@ Ikone za bližnjico na namizju/telefonu so narejene iz naslovne slike igre.
 POSODOBITEV IGRE
 - V repozitoriju klikni Add file > Upload files in povleci novo index.html
   (stara se zamenja). Commit changes.
-- V sw.js povečaj številko različice (npr. gp-kamnik-v3 > gp-kamnik-v4),
+- V sw.js povečaj številko različice (npr. gp-kamnik-v6 > gp-kamnik-v7),
   da telefoni, ki so igro že namestili, naložijo novo različico.
 
 LASTNA DOMENA (neobvezno)
