@@ -1,0 +1,33 @@
+GRAND PRIX KAMNIK - objava na GitHub Pages
+==========================================
+
+V tej mapi je vse, kar igra potrebuje, razen glasbe:
+  index.html, three.min.js, sw.js, manifest.webmanifest, ikone (png)
+
+PRED OBJAVO: v mapo dodaj svojo datoteko music.mp3 (iz stare mape za Netlify).
+Brez nje igra deluje, le glasbe v meniju ni.
+
+1. Na https://github.com/signup ustvari brezplačen račun (če ga še nimaš).
+2. Desno zgoraj klikni + > New repository.
+   - Repository name: kamnik-grand-prix
+   - Izberi Public (brezplačni GitHub Pages deluje samo z javnimi repozitoriji)
+   - Klikni Create repository.
+3. Na novi strani klikni povezavo "uploading an existing file".
+   Vse datoteke iz te mape (ne mape same) povleci v okno.
+   Spodaj klikni Commit changes in počakaj, da se naložijo.
+4. Odpri Settings > Pages (meni levo).
+   - Source: Deploy from a branch
+   - Branch: main, mapa: / (root) > Save
+5. Počakaj 1-2 minuti in osveži stran. Zgoraj se prikaže naslov:
+   https://TVOJE-UPORABNISKO-IME.github.io/kamnik-grand-prix/
+   To je nova povezava do igre (tudi za QR kodo).
+
+POSODOBITEV IGRE
+- V repozitoriju klikni Add file > Upload files in povleci novo index.html
+  (stara se zamenja). Commit changes.
+- V sw.js povečaj številko različice (gp-kamnik-v1 > gp-kamnik-v2),
+  da telefoni, ki so igro že namestili, naložijo novo različico.
+
+LASTNA DOMENA (neobvezno)
+Settings > Pages > Custom domain, npr. kamnik.momentogames.si.
+Pri ponudniku domene dodaš zapis CNAME:  kamnik  ->  TVOJE-IME.github.io
