@@ -781,7 +781,7 @@ function pop(txt,good){const e=$('pop');e.textContent=txt;e.style.color=good?'#7
 function collectB(dt){const p=player,sp=((p.dist%L)+L)%L;
  for(const b of bottles){if(b.got)continue;let d=b.s-sp;d=((d+L/2)%L+L)%L-L/2;
   if(Math.abs(d)<2+p.v*dt&&Math.abs(b.x-p.x)<1.7){b.got=true;b.g.visible=false;const bv=b.t.v>0&&b.x>0?b.t.v*2:b.t.v;p.score=Math.max(0,p.score+bv);
-   if(b.t.v>0){p.good++;sfx((b.t.n==='Penina'||b.t.big)?'cork':b.x>0?'good2':'good');pop('+'+bv+' '+b.t.n+' '+ICO+(bv!==b.t.v?' ×2!':''),1)}else{p.bad++;sfx('bad');p.v*=.9;pop(b.t.v+(OPEN?' uvela roža':' razbita steklenica'),0);{p.glass=(p.glass||0)+1;if(!p.flat){if(p.glass>=3){p.flat=true;p.hint2=false;sfx('flat');msg(OPEN?'🥀 3 ovenele rože! Pretežke so – ustavita se na bencinski črpalki ⛽ in jih odvrzita v smeti':'🛞 PRAZNA GUMA! Hitrost padla na 90 km/h. Gumo zamenjaj na črpalki ⛽',5200)}else msg(OPEN?'🥀 Ovenele rože '+p.glass+'/3':'⚠️ Steklo v gumi '+p.glass+'/3',1600)}}}}}}
+   if(b.t.v>0){p.good++;sfx(OPEN?(b.x>0||b.t.big?'good2':'good'):(b.t.n==='Penina'||b.t.big)?'cork':b.x>0?'good2':'good');pop('+'+bv+' '+b.t.n+' '+ICO+(bv!==b.t.v?' ×2!':''),1)}else{p.bad++;sfx('bad');p.v*=.9;pop(b.t.v+(OPEN?' uvela roža':' razbita steklenica'),0);{p.glass=(p.glass||0)+1;if(!p.flat){if(p.glass>=3){p.flat=true;p.hint2=false;sfx(OPEN?'bad':'flat');msg(OPEN?'🥀 3 ovenele rože! Pretežke so – ustavita se na bencinski črpalki ⛽ in jih odvrzita v smeti':'🛞 PRAZNA GUMA! Hitrost padla na 90 km/h. Gumo zamenjaj na črpalki ⛽',5200)}else msg(OPEN?'🥀 Ovenele rože '+p.glass+'/3':'⚠️ Steklo v gumi '+p.glass+'/3',1600)}}}}}}
 // ---------- bikes ----------
 function makeBike(col,helm,tag){let fnArms=null;const g=new R.Group(),lean=new R.Group(),body=new R.Group();g.add(lean);lean.add(body);body.scale.setScalar(1.2);
  const Z=px=>(645-px)*.002875,Y=py=>(668-py)*.002875,I=new R.Matrix4(),V3=(a,b,c)=>new R.Vector3(a,b,c);
@@ -989,7 +989,7 @@ function checkTraffic(dt){const p=player;if(p.comboT>0){p.comboT-=dt;if(p.comboT
  for(const c of cars){const d=wrapD(c.s-p.dist),dx=Math.abs((c.ex!=null?c.ex:c.x)-p.x);
   if(p.crashT<=0&&p.inv<=0&&Math.abs(d)<c.len/2+1.1&&dx<c.w/2+.45){crash()}
   if(c.pd>0&&d<=0&&c.pd<20&&p.v>14&&p.crashT<=0){const gap=dx-c.w/2-.4;
-   if(gap<1.4){const base=c.dir<0?60:30;p.combo=Math.min(5,p.combo+(p.comboT>0?1:0));p.comboT=4;const pts=base*p.combo;p.score+=pts;p.near++;p.cheerT=1.6;sfx('pass');p.nitro=Math.min(100,p.nitro+(c.dir<0?18:10));
+   if(gap<1.4){const base=c.dir<0?60:30;p.combo=Math.min(5,p.combo+(p.comboT>0?1:0));p.comboT=4;const pts=base*p.combo;p.score+=pts;p.near++;p.cheerT=1.6;sfx('pass');if(OPEN)setTimeout(()=>sfx('cheer'),120);p.nitro=Math.min(100,p.nitro+(c.dir<0?18:10));
     pop('🚗 Bližnje prehitevanje! +'+pts+(p.combo>1?'  ×'+p.combo:''),1)}}
   c.pd=d}}
 function simPlayer(dt){const p=player,done=state==='done',cr=p.crashT>0;
@@ -1012,7 +1012,7 @@ function simPlayer(dt){const p=player,done=state==='done',cr=p.crashT>0;
  if(Math.abs(p.x)>W/2+22){p.x=Math.sign(p.x)*(W/2+22);p.v*=.97;p.lv=0}
   if(inMW(p.dist)&&p.crashT<=0){const gap=inGap(p.dist);if(p.x>W/2+.7&&!inSlip(p)){p.x=W/2+.7;if(p.lv>0)p.lv=-p.lv*.25;p.v*=Math.exp(-1.2*dt)}if(gap){p.rail=0}else if(p.x>-.75&&p.x<.75){const lf=p.x>.1;p.x=lf?.75:-.75;if(lf?p.lv<0:p.lv>0)p.lv=-p.lv*.25;p.v*=Math.exp(-1.2*dt);if(!p.rail){p.rail=1;sfx('bad');msg('🚧 Sredinska ograja – avtocesta',1200)}}else p.rail=0;
    if(p.x<-(W/2+.7)&&!inSlip(p)){p.x=-(W/2+.7);if(p.lv<0)p.lv=-p.lv*.25;p.v*=Math.exp(-1.2*dt)}}
- const d0=p.dist;p.dist+=p.v*dt;p.leanT=cl(-k*p.v*1.2-steer*.25,-.7,.7);p.off=off||shd;p.nOn=nOn;petrolCheck(dt);rbPush(p,dt);p.cheerT=Math.max(0,(p.cheerT||0)-dt);p.heartT=Math.max(0,(p.heartT||0)-dt);if(OPEN){const k10=Math.floor(Math.max(0,p.dist)/FIN*REALKM/10);if(k10>(p.k10||0)){p.k10=k10;p.heartT=3.2}}if(state==='race')radarCheck(d0,p);
+ const d0=p.dist;p.dist+=p.v*dt;p.leanT=cl(-k*p.v*1.2-steer*.25,-.7,.7);p.off=off||shd;p.nOn=nOn;petrolCheck(dt);rbPush(p,dt);p.cheerT=Math.max(0,(p.cheerT||0)-dt);p.heartT=Math.max(0,(p.heartT||0)-dt);if(OPEN){const k10=Math.floor(Math.max(0,p.dist)/FIN*REALKM/10);if(k10>(p.k10||0)){p.k10=k10;p.heartT=3.2;sfx('heart')}}if(state==='race')radarCheck(d0,p);
  if(p.crashT>0){p.crashT-=dt;if(p.crashT<=0)afterCrash()}if(p.inv>0)p.inv-=dt;
  if(!p.fin&&p.dist>=FIN){if(p.flat){raceT+=30;pop(OPEN?'🥀 Ovenele rože na cilju: +30 s':'🛞 Prazna guma na cilju: +30 s',0)}p.fin=true;state='done';finish()}}
 function radarCheck(d0,p){const kmh=Math.round(p.v*3.6);if(!p.radW)p.radW=new Set();if(!p.radP)p.radP=new Set();
@@ -1383,6 +1383,9 @@ function sfx(k){const hk=k==='cork'||k==='good2'?'good':k;if(hk==='good'||hk==='
  case'beep':tone(660,.16,'sine',.28);break;
  case'go':tone(990,.45,'sine',.3);tone(1485,.45,'sine',.13);tone(660,.45,'triangle',.1);break;
  case'pass':nz(.65,.24,'bandpass',1900,320,1.4);break;
+ case'cheer':tone(784,.16,'triangle',.14);tone(988,.16,'triangle',.14,0,.08);tone(1319,.3,'triangle',.15,0,.16);nz(.04,.12,'highpass',7000,0,1,.16);break;
+ case'heart':[523,659,784,1047,1319,1568].forEach((fr,i)=>{tone(fr,.5,'sine',.12,0,i*.1);tone(fr*2,.4,'sine',.05,0,i*.1+.02)});nz(.05,.14,'highpass',7500,0,1,.55);break;
+
  case'pop':nz(.04,.34,'bandpass',650+rd()*700,280,3);tone(170+rd()*60,.05,'square',.1,80);break;
  }}
 // ---------- Radio: predvajanje naložene pesmi med vožnjo ----------
@@ -1533,7 +1536,7 @@ function fixTirePetrol(){const p=player;p.fixP=0;p.flat=false;p.glass=0;p.hint2=
 const PRINGS=stations.map(st=>{const m=new R.Mesh(new R.RingGeometry(3.4,4.1,48).rotateX(-Math.PI/2),new R.MeshBasicMaterial({color:0xffd43b,transparent:true,opacity:.6,depthWrite:false,fog:false}));m.position.set(st.x,.26,st.z);scene.add(m);return m});
 function petrolCheck(dt){const p=player;if(state!=='race')return;const pp=p.g.position;if(!p.usedSt)p.usedSt=new Set();let inn=false;
  stations.forEach((st,i)=>{const dx=st.x-pp.x,dz=st.z-pp.z,d2=dx*dx+dz*dz;
-  if(p.usedSt.has(i)){PRINGS[i].material.opacity=p.flat?.45+.3*Math.sin(performance.now()/260):.15;if(p.flat&&d2<7.5*7.5&&p.v<9){inn=true;p.fixP=(p.fixP||0)+dt;msg((OPEN?'🗑️ Odmetavam ovenele rože… ':'🛞 Menjam gumo na črpalki… ')+Math.min(100,Math.round(p.fixP/2.6*100))+'%',300);if(!p.wP||p.fixP-p.wP>.28||p.fixP<p.wP){p.wP=p.fixP;sfx('wrench')}if(p.fixP>=2.6)fixTirePetrol()}return}
+  if(p.usedSt.has(i)){PRINGS[i].material.opacity=p.flat?.45+.3*Math.sin(performance.now()/260):.15;if(p.flat&&d2<7.5*7.5&&p.v<9){inn=true;p.fixP=(p.fixP||0)+dt;msg((OPEN?'🗑️ Odmetavam ovenele rože… ':'🛞 Menjam gumo na črpalki… ')+Math.min(100,Math.round(p.fixP/2.6*100))+'%',300);if(!p.wP||p.fixP-p.wP>.28||p.fixP<p.wP){p.wP=p.fixP;sfx(OPEN?'pop':'wrench')}if(p.fixP>=2.6)fixTirePetrol()}return}
   PRINGS[i].material.opacity=.45+.3*Math.sin(performance.now()/260);
   if(d2<14*14&&d2>=7.5*7.5&&!p.hint){p.hint=true;msg(p.flat?(OPEN?'⛽ Petrol – ustavita se in odvrzita ovenele rože':'⛽ Petrol – ustavi se in zamenjaj gumo'):'⛽ Petrol – ustavi se pod nadstreškom',2200)}
   if(d2<7.5*7.5&&p.v<9){inn=true;p.fuelT=(p.fuelT||0)+dt;if(!p.gT||p.fuelT-p.gT>.4||p.fuelT<p.gT){p.gT=p.fuelT;sfx('gurg')}msg('⛽ Tankam… '+Math.min(100,Math.round(p.fuelT/1.8*100))+'%',300);
