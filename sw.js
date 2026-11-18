@@ -1,7 +1,7 @@
 // Grand Prix Kamnik – delovanje brez povezave
 // Ob vsaki novi objavi povečaj številko različice, da telefoni naložijo novo igro.
-const CACHE='gp-kamnik-v25';
-const FILES=['./','./index.html','./lestvica.html','./three.min.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png'];
+const CACHE='gp-kamnik-v26';
+const FILES=['./','./index.html','./lestvica.html','./three.min.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./models/sedan.glb','./models/sedan-sports.glb','./models/hatchback-sports.glb','./models/suv.glb','./models/suv-luxury.glb','./models/taxi.glb','./models/van.glb','./models/delivery-flat.glb','./models/delivery.glb','./models/truck.glb','./models/truck-flat.glb','./models/garbage-truck.glb'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{

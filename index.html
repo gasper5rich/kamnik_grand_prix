@@ -935,6 +935,22 @@ function buildCarGeo(kind,len,w){
  return{body:B.build(),trim:T2.build(),glass:G.build(),lights:Lt.build()}}
 const cars=[];
 for(let l=0;l<4;l++)for(let i=0;i<(OPEN?85:24);i++){const r=Math.random(),kind=r<.16?'truck':r<.34?'van':'car',c=makeCar(kind);c.lane=l;c.dir=l<2?1:-1;c.x=LANES[l];c.s=0;c.v=0;c.v0=0;c.pd=0;cars.push(c)}
+// ---- Kenney Car Kit (CC0): pravi 3D modeli avtomobilov, naloženi iz GLB ----
+const KCN={car:['sedan','sedan-sports','hatchback-sports','suv','suv-luxury','taxi'],van:['van','delivery-flat'],truck:['delivery','truck','truck-flat','garbage-truck']},KCM={},KMAT={},KTINT=[0xffffff,0xffffff,0xffffff,0xffc9c9,0xc9dcff,0xc9ffd2,0xfff0b8,0xe0c9ff,0xb9b9c4];
+async function loadGLB(url){const rs=await fetch(url);if(!rs.ok)throw new Error(url);const b=await rs.arrayBuffer(),dv=new DataView(b),jl=dv.getUint32(12,true),J=JSON.parse(new TextDecoder().decode(new Uint8Array(b,20,jl))),BIN=20+jl+8;
+ const rd=ai=>{const a=J.accessors[ai],bv=J.bufferViews[a.bufferView],n={SCALAR:1,VEC2:2,VEC3:3,VEC4:4}[a.type],C=a.componentType===5126?Float32Array:a.componentType===5123?Uint16Array:Uint32Array,bs=C.BYTES_PER_ELEMENT;if(bv.byteStride&&bv.byteStride!==n*bs)throw new Error('stride');const o=BIN+(bv.byteOffset||0)+(a.byteOffset||0);return new C(b.slice(o,o+a.count*n*bs))};
+ const im=J.images[0],ibv=J.bufferViews[im.bufferView],bmp=await createImageBitmap(new Blob([b.slice(BIN+(ibv.byteOffset||0),BIN+(ibv.byteOffset||0)+ibv.byteLength)],{type:im.mimeType})),tex=new R.Texture(bmp);tex.flipY=false;tex.colorSpace=R.SRGBColorSpace;tex.anisotropy=4;tex.needsUpdate=true;
+ const parts=[],mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];
+ for(const nd of J.nodes){if(nd.mesh==null)continue;const t=nd.translation||[0,0,0];for(const p of J.meshes[nd.mesh].primitives){const g=new R.BufferGeometry();g.setAttribute('position',new R.BufferAttribute(rd(p.attributes.POSITION),3));g.setAttribute('normal',new R.BufferAttribute(rd(p.attributes.NORMAL),3));g.setAttribute('uv',new R.BufferAttribute(rd(p.attributes.TEXCOORD_0),2));g.setIndex(new R.BufferAttribute(rd(p.indices),1));
+  const ac=J.accessors[p.attributes.POSITION];for(let i=0;i<3;i++){mn[i]=Math.min(mn[i],ac.min[i]+t[i]);mx[i]=Math.max(mx[i],ac.max[i]+t[i])}parts.push({geo:g,t,wheel:/wheel/.test(nd.name||'')})}}
+ return{parts,tex,len:mx[2]-mn[2],wid:mx[0]-mn[0],cz:(mx[2]+mn[2])/2}}
+function kMat(n,tint){const k=n+tint;return KMAT[k]||(KMAT[k]=new R.MeshStandardMaterial({map:KCM[n].tex,color:tint,roughness:.55,metalness:.12,envMapIntensity:.9}))}
+function upgradeCars(){for(const c of cars){const names=KCN[c.kind];if(!names)continue;const n=names[(Math.random()*names.length)|0],m=KCM[n];if(!m)continue;
+  for(let i=c.g.children.length-1;i>=0;i--){const ch=c.g.children[i];if(ch!==c.blob)c.g.remove(ch)}
+  const wmax=c.kind==='truck'?2.9:c.kind==='van'?2.4:2.3,sc=Math.min(c.len*.85/m.len,wmax/m.wid),tint=c.kind==='car'&&n!=='taxi'?KTINT[(Math.random()*KTINT.length)|0]:0xffffff,mat=kMat(n,tint),grp=new R.Group();grp.scale.setScalar(sc);grp.position.z=-m.cz*sc;c.wh=[];
+  for(const p of m.parts){const me=new R.Mesh(p.geo,mat);me.position.set(p.t[0],p.t[1],p.t[2]);me.castShadow=true;me.receiveShadow=true;grp.add(me);if(p.wheel)c.wh.push(me)}c.g.add(grp)}}
+async function loadKenney(){try{const all=[...new Set(Object.values(KCN).flat())];await Promise.all(all.map(async n=>{KCM[n]=await loadGLB('models/'+n+'.glb')}));upgradeCars()}catch(e){console.log('glb fail',e)}}
+loadKenney();
 function resetCars(){for(let l=0;l<4;l++){let s=260+rnd(0,120);const mine=cars.filter(c=>c.lane===l);let ci=0;for(const c of mine){if(OPEN){c.s=260+(ci++)*(L-520)/mine.length+rnd(-50,50)}else{c.s=s;s+=rnd(200,300)}const base=l===0?20:l===1?27:l===2?27:31;c.v0=c.v=base+rnd(0,8)-(c.kind==='truck'?6:0);c.pd=99;c.g.visible=false}
  const sc=OPEN?1:(L-200)/Math.max(s-260,1);if(sc<1)for(const c of mine)c.s=260+(c.s-260)*sc}}
 function laneEx(c){const r=regW(c.s);c.ex=Math.abs(c.x)>4?Math.sign(c.x)*(6-4*r):c.x;c.lk=r>.5?(c.dir>0?'f':'b'):c.lane}
@@ -1531,7 +1547,7 @@ function askExtra(){state='ask';xl.style.display='flex';keys.gas=keys.brake=keys
 document.getElementById('xyes').onclick=()=>{xl.style.display='none';player.extra=true;state='race';msg('DODATEN KROG! 🏁',2200)};
 document.getElementById('xno').onclick=()=>{xl.style.display='none';const p=player;p.fin=true;state='done';finish()};
 function applyShadows(){const an=Math.min(IS_TOUCH?8:16,renderer.capabilities.getMaxAnisotropy());scene.traverse(o=>{const m=o.material;if(m&&m.map){m.map.anisotropy=an;m.map.needsUpdate=true}});scene.traverse(o=>{if(o.isMesh&&!o.isInstancedMesh&&!o.userData.nc&&o.material&&!o.material.isMeshBasicMaterial&&!o.material.isShaderMaterial){o.castShadow=true;o.receiveShadow=true}})}
-function renderAll(now,dt){const p=player,pp=p.g.position;governor(now,p);flagWave(now);if(p.wf){const a=p.v*dt/.36;p.wf.rotation.x+=a;p.wr.rotation.x+=a}fxUpdate(dt,p,pp);
+function renderAll(now,dt){const p=player,pp=p.g.position;governor(now,p);flagWave(now);if(p.wf){const a=p.v*dt/.36;p.wf.rotation.x+=a;p.wr.rotation.x+=a}fxUpdate(dt,p,pp);for(const c of cars)if(c.wh&&c.g.visible){const a=c.v*dt/.33;for(const w of c.wh)w.rotation.x+=a}
  if(window.SKIRT){SKIRT.position.x=cam.position.x;SKIRT.position.z=cam.position.z}cullChunks(cam,cam.position.x,cam.position.z);
  if(GFX.shadow){const f=at(p.dist);updShadow(pp.x+f.tx*35,0,pp.z+f.tz*35);renderer.shadowMap.needsUpdate=true;sun.castShadow=true}else sun.castShadow=false;
  renderer.autoClear=true;renderer.render(scene,cam);
