@@ -619,7 +619,7 @@ if(OPEN){const KMF=k=>k/117*.975,mt=c=>new R.MeshLambertMaterial({color:c}),hg=n
   const sea=new R.Mesh(sg,new R.MeshStandardMaterial({color:0x2f86c8,roughness:.25,metalness:.15,side:R.DoubleSide}));sea.userData.nc=1;scene.add(sea);
   const q=P2(f1-.0035,W/2+90),g=new R.Group();box(5,2,5,0xb9b4a8,0,1,0,g);const tw=new R.Mesh(new R.CylinderGeometry(1.6,2.4,20,16),mt(0xf4f4f0));tw.position.y=12;g.add(tw);const bd=new R.Mesh(new R.CylinderGeometry(1.7,1.7,2,16),mt(0xd23a3a));bd.position.y=18;g.add(bd);
   const lm=new R.Mesh(new R.CylinderGeometry(1.5,1.5,2.4,16),new R.MeshBasicMaterial({color:0xffe9a0}));lm.position.y=23;g.add(lm);box(4,.6,4,0x3a3d43,0,25,0,g);put(g,q);townPts.push(q);
-  for(let i=0;i<5;i++){const qq=P2(f1-.0075+i*.0013,W/2+130+(i%3)*50),bt=new R.Group();box(3.4,1.2,10,[0xf4f4f0,0x2a62a8,0xc23a2a][i%3],0,.6,0,bt);box(2,1.8,3.6,0xffffff,0,2,-.6,bt);box(.25,6,.25,0x888888,0,4.2,2,bt);put(bt,qq);townPts.push(qq)}}
+  for(let i=0;i<5;i++){const qq=P2(f1-.0075+i*.0013,W/2+130+(i%3)*50),bt=new R.Group();box(3.4,1.2,10,[0xf4f4f0,0x2a62a8,0xc23a2a][i%3],0,.6,0,bt);box(2,1.8,3.6,0xffffff,0,2,-.6,bt);box(.25,6,.25,0x888888,0,4.2,2,bt);put(bt,qq);(window.TRBT=window.TRBT||[]).push(bt);townPts.push(qq)}}
  // Trst: mesto, pomol, italijanske zastave
  {let sd=7;const rn=()=>(sd=(sd*16807)%2147483647)/2147483647,rg=(a,b)=>a+(b-a)*rn();
   const flag=(h,z)=>{const g=new R.Group(),p=new R.Mesh(new R.CylinderGeometry(.08*z,.11*z,h,6),mt(0xdddddd));p.position.y=h/2;g.add(p);[0x009246,0xffffff,0xce2b37].forEach((c,i)=>{const m=new R.Mesh(new R.PlaneGeometry(.95*z,1.9*z),new R.MeshBasicMaterial({color:c,side:R.DoubleSide}));m.position.set((i+.5)*.95*z+.05*z,h-1.0*z,0);g.add(m)});return g};
@@ -639,7 +639,7 @@ if(OPEN){const KMF=k=>k/117*.975,mt=c=>new R.MeshLambertMaterial({color:c}),hg=n
    box(10,5,9,0xf0e6d2,x0+len-14,3.4,0,g);box(10.4,1,9.4,0x9a4a35,x0+len-14,6.4,0,g);
    g.position.set(a.x,0,a.z);g.rotation.y=Math.atan2(a.tx,a.tz);scene.add(g);townPts.push({x:a.x,z:a.z});
    const sh=new R.Group();box(90,7,18,0xf4f4f0,0,3.5,0,sh);box(90.4,2,18.4,0x2a62a8,0,1,0,sh);box(40,8,14,0xffffff,-10,11,0,sh);box(3,10,3,0xd23a3a,-14,20,0,sh);const fp=flag(14,2);fp.position.set(40,7,0);sh.add(fp);
-   const lo=x0+len*.55+14;sh.position.set(a.x+a.tz*lo+a.tx*-30,0,a.z-a.tx*lo+a.tz*-30);sh.rotation.y=Math.atan2(a.tx,a.tz);scene.add(sh)}
+   const lo=x0+len*.55+14;sh.position.set(a.x+a.tz*lo+a.tx*-30,0,a.z-a.tx*lo+a.tz*-30);sh.rotation.y=Math.atan2(a.tx,a.tz);scene.add(sh);window.TRSH=sh}
   for(const sdn of[-1,1])for(const dd of[-30,30]){const a=at(FIN+dd),o=sdn*(W/2+4),f=flag(13,1.8);f.position.set(a.x+a.tz*o,0,a.z-a.tx*o);f.rotation.y=Math.atan2(a.tx,a.tz);scene.add(f)}
  }
 }
@@ -951,6 +951,20 @@ function upgradeCars(){for(const c of cars){const names=KCN[c.kind];if(!names)co
   for(const p of m.parts){const me=new R.Mesh(p.geo,mat);me.position.set(p.t[0],p.t[1],p.t[2]);me.castShadow=true;me.receiveShadow=true;grp.add(me);if(p.wheel)c.wh.push(me)}c.g.add(grp)}}
 async function loadKenney(){try{const all=[...new Set(Object.values(KCN).flat())];await Promise.all(all.map(async n=>{KCM[n]=await loadGLB('models/'+n+'.glb')}));upgradeCars()}catch(e){console.log('glb fail',e)}}
 loadKenney();
+// ---- Quaternius Ship Pack (CC0): ladje v pristanišču Trst ----
+async function loadShip(url,len){const b=await (await fetch(url)).arrayBuffer(),dv=new DataView(b),jl=dv.getUint32(12,true),J=JSON.parse(new TextDecoder().decode(new Uint8Array(b,20,jl))),BIN=20+jl+8;
+ const rd=ai=>{const a=J.accessors[ai],bv=J.bufferViews[a.bufferView],n={SCALAR:1,VEC2:2,VEC3:3,VEC4:4}[a.type],C=a.componentType===5126?Float32Array:a.componentType===5123?Uint16Array:Uint32Array,o=BIN+(bv.byteOffset||0)+(a.byteOffset||0);return new C(b.slice(o,o+a.count*n*C.BYTES_PER_ELEMENT))};
+ const mats=(J.materials||[]).map(m=>{const f=(m.pbrMetallicRoughness||{}).baseColorFactor||[.8,.8,.8,1];return new R.MeshStandardMaterial({color:new R.Color().setRGB(f[0],f[1],f[2],R.LinearSRGBColorSpace),roughness:.55,metalness:.1,envMapIntensity:.8})});
+ const grp=new R.Group(),walk=(ni,pm)=>{const n=J.nodes[ni],wm=pm.clone().multiply(new R.Matrix4().compose(new R.Vector3(...(n.translation||[0,0,0])),new R.Quaternion(...(n.rotation||[0,0,0,1])),new R.Vector3(...(n.scale||[1,1,1]))));
+  if(n.mesh!=null)for(const p of J.meshes[n.mesh].primitives){const g=new R.BufferGeometry();g.setAttribute('position',new R.BufferAttribute(rd(p.attributes.POSITION),3));g.setAttribute('normal',new R.BufferAttribute(rd(p.attributes.NORMAL),3));if(p.indices!=null)g.setIndex(new R.BufferAttribute(rd(p.indices),1));g.applyMatrix4(wm);const me=new R.Mesh(g,mats[p.material||0]);me.castShadow=true;grp.add(me)}
+  (n.children||[]).forEach(c=>walk(c,wm))};J.scenes[0].nodes.forEach(n=>walk(n,new R.Matrix4()));
+ const bb=new R.Box3().setFromObject(grp),sc=len/(bb.max.z-bb.min.z),o=new R.Group();grp.scale.setScalar(sc);grp.position.y=-bb.min.y*sc*.35;o.add(grp);return o}
+async function placeShips(){try{const P='models/ship-';
+  if(window.TRSH){const sh=window.TRSH,c=await loadShip(P+'CruiseShip.glb',92);c.position.copy(sh.position);c.rotation.y=sh.rotation.y+Math.PI/2;scene.add(c);scene.remove(sh)}
+  const names=[['Sail-ship',26],['BoatWSail',11],['Boat',8],['Sail-ship',22],['BoatWSail',12]];
+  for(let i=0;i<(window.TRBT||[]).length;i++){const bt=window.TRBT[i],[n,l]=names[i%names.length],c=await loadShip(P+n+'.glb',l);c.position.copy(bt.position);c.rotation.y=bt.rotation.y+i*1.1;scene.add(c);scene.remove(bt)}
+ }catch(e){console.log('ship fail',e)}}
+if(OPEN)placeShips();
 function resetCars(){for(let l=0;l<4;l++){let s=260+rnd(0,120);const mine=cars.filter(c=>c.lane===l);let ci=0;for(const c of mine){if(OPEN){c.s=260+(ci++)*(L-520)/mine.length+rnd(-50,50)}else{c.s=s;s+=rnd(200,300)}const base=l===0?20:l===1?27:l===2?27:31;c.v0=c.v=base+rnd(0,8)-(c.kind==='truck'?6:0);c.pd=99;c.g.visible=false}
  const sc=OPEN?1:(L-200)/Math.max(s-260,1);if(sc<1)for(const c of mine)c.s=260+(c.s-260)*sc}}
 function laneEx(c){const r=regW(c.s);c.ex=Math.abs(c.x)>4?Math.sign(c.x)*(6-4*r):c.x;c.lk=r>.5?(c.dir>0?'f':'b'):c.lane}
