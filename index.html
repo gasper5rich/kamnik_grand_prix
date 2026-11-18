@@ -777,7 +777,7 @@ function collectB(dt){const p=player,sp=((p.dist%L)+L)%L;
   if(Math.abs(d)<2+p.v*dt&&Math.abs(b.x-p.x)<1.7){b.got=true;b.g.visible=false;const bv=b.t.v>0&&b.x>0?b.t.v*2:b.t.v;p.score=Math.max(0,p.score+bv);
    if(b.t.v>0){p.good++;sfx((b.t.n==='Penina'||b.t.big)?'cork':b.x>0?'good2':'good');pop('+'+bv+' '+b.t.n+' '+ICO+(bv!==b.t.v?' ×2!':''),1)}else{p.bad++;sfx('bad');p.v*=.9;pop(b.t.v+(OPEN?' uvela roža':' razbita steklenica'),0);{p.glass=(p.glass||0)+1;if(!p.flat){if(p.glass>=3){p.flat=true;p.hint2=false;sfx('flat');msg(OPEN?'🥀 3 ovenele rože! Pretežke so – ustavita se na bencinski črpalki ⛽ in jih odvrzita v smeti':'🛞 PRAZNA GUMA! Hitrost padla na 90 km/h. Gumo zamenjaj na črpalki ⛽',5200)}else msg(OPEN?'🥀 Ovenele rože '+p.glass+'/3':'⚠️ Steklo v gumi '+p.glass+'/3',1600)}}}}}}
 // ---------- bikes ----------
-function makeBike(col,helm,tag){const g=new R.Group(),lean=new R.Group(),body=new R.Group();g.add(lean);lean.add(body);body.scale.setScalar(1.2);
+function makeBike(col,helm,tag){let fnArms=null,RS=null;const g=new R.Group(),lean=new R.Group(),body=new R.Group();g.add(lean);lean.add(body);body.scale.setScalar(1.2);
  const Z=px=>(645-px)*.002875,Y=py=>(668-py)*.002875,I=new R.Matrix4(),V3=(a,b,c)=>new R.Vector3(a,b,c);
  const P=MB(),Rd=MB(),Gl=MB(),Wf=MB(),Wr=MB(),Lt=MB();
  const prof=(B,pts,w,bev,c)=>B.add(profGeo(pts.map(q=>[Z(q[0]),Y(q[1])]),w,bev,.2),I,c);
@@ -844,9 +844,27 @@ function makeBike(col,helm,tag){const g=new R.Group(),lean=new R.Group(),body=ne
  if(LV===2){const PK=0xff69b4,PD=0x2b2d3a,SK=0xf1c7a0;
   ell(Rd,0,1.42,-.98,.22,.17,.2,PD);ell(Rd,0,1.62,-.8,.19,.3,.15,PK,.3);
   for(const sd of[-1,1]){tube(Rd,[sd*.15,1.35,-.98],[sd*.3,1.12,-.62],.075,PD);tube(Rd,[sd*.3,1.12,-.62],[sd*.25,.7,-.55],.06,PD);ell(Rd,sd*.26,.62,-.5,.065,.06,.14,0x1b1c20);
-   tube(Rd,[sd*.2,1.85,-.82],[sd*.24,1.62,-.5],.05,PK);tube(Rd,[sd*.24,1.62,-.5],[sd*.16,1.5,-.36],.045,PK);ell(Rd,sd*.15,1.5,-.34,.05,.05,.05,SK)}
+   tube(Rd,[sd*.22,1.6,.12],[sd*.3,1.42,.3],.058,0xd9ff1a)}
+  ell(Rd,0,1.51,0,.222,.175,.415,0xd9ff1a,-.5);ell(Rd,0,1.56,.03,.226,.03,.3,0xffffff,-.5);
   const PH=new R.Mesh(hg,new R.MeshStandardMaterial({color:0xff69b4,metalness:.15,roughness:.2,envMapIntensity:1}));PH.scale.set(.2,.21,.25);PH.position.set(0,2.0,-.74);PH.rotation.set(.2,0,0);
-  const PV=new R.Mesh(hg,new R.MeshStandardMaterial({color:0x2a1030,metalness:.6,roughness:.08,envMapIntensity:1.4}));PV.scale.set(.18,.09,.12);PV.position.set(0,1.97,-.58);PV.rotation.set(.1,0,0);body.add(PH,PV)}
+  const PV=new R.Mesh(hg,new R.MeshStandardMaterial({color:0x2a1030,metalness:.6,roughness:.08,envMapIntensity:1.4}));PV.scale.set(.18,.09,.12);PV.position.set(0,1.97,-.58);PV.rotation.set(.1,0,0);body.add(PH,PV);
+  // animirani roki: veselje ob prehitevanju, srček na vsakih 10 km
+  {const AM=new R.MeshStandardMaterial({color:PK,roughness:.5}),SM=new R.MeshStandardMaterial({color:SK,roughness:.6}),cyG=new R.CylinderGeometry(1,1,1,8),spG=new R.SphereGeometry(1,10,8),UPv=new R.Vector3(0,1,0);
+   const arms=[1,-1].map(sd=>{const u=new R.Mesh(cyG,AM),f=new R.Mesh(cyG,AM),h=new R.Mesh(spG,SM);body.add(u,f,h);return{sd,u,f,h,P:[new R.Vector3(),new R.Vector3(),new R.Vector3()]}});
+   const REST=[[.2,1.85,-.82],[.24,1.62,-.5],[.16,1.5,-.36]],CHEER=[[.2,1.85,-.82],[.5,2.12,-.78],[.76,2.45,-.74]],HEART=[[.2,1.85,-.82],[.42,2.4,-.8],[.02,2.28,-.8]];
+   const setT=(m,A,B,r)=>{m.position.copy(A).add(B).multiplyScalar(.5);const d=B.clone().sub(A),l=d.length();m.quaternion.setFromUnitVectors(UPv,d.normalize());m.scale.set(r,l,r)};
+   const hc=document.createElement('canvas');hc.width=hc.height=128;{const x=hc.getContext('2d');x.font='96px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('💗',64,70)}
+   const hs=new R.Sprite(new R.SpriteMaterial({map:new R.CanvasTexture(hc),transparent:true,depthTest:false}));hs.scale.set(.9,.9,1);hs.position.set(0,3.15,-.8);hs.renderOrder=9;hs.visible=false;body.add(hs);
+   let ac=0,ah=0;
+   fnArms=(dt,cheer,heart,t)=>{ac+=((cheer?1:0)-ac)*Math.min(1,dt*9);ah+=((heart?1:0)-ah)*Math.min(1,dt*7);
+    for(const a of arms){for(let i=0;i<3;i++){const r=REST[i],c=CHEER[i],h=HEART[i],v=a.P[i];let x=r[0]+(c[0]-r[0])*ac,y=r[1]+(c[1]-r[1])*ac,z=r[2]+(c[2]-r[2])*ac;x+=(h[0]-x)*ah;y+=(h[1]-y)*ah;z+=(h[2]-z)*ah;
+      if(i===2){const w=ac*(1-ah);x+=Math.sin(t*15)*.07*w;y+=Math.cos(t*15)*.06*w}
+      v.set(x*a.sd,y,z)}
+     setT(a.u,a.P[0],a.P[1],.052);setT(a.f,a.P[1],a.P[2],.046);a.h.position.copy(a.P[2]);a.h.scale.setScalar(.056)}
+    hs.visible=ah>.3;if(RS)RS.visible=ah<.3;if(hs.visible){hs.material.opacity=Math.min(1,(ah-.3)*3);hs.position.y=3.15+Math.sin(t*6)*.06;hs.scale.setScalar(.8+.12*Math.sin(t*9))}};
+   // oznaka nad voznikom
+   const rc=document.createElement('canvas');rc.width=256;rc.height=72;{const q=rc.getContext('2d');q.fillStyle='rgba(217,255,26,.95)';q.beginPath();q.roundRect(4,6,248,60,18);q.fill();q.fillStyle='#1b1d12';q.font='bold 40px sans-serif';q.textAlign='center';q.textBaseline='middle';q.fillText('▼ Roman',128,38)}
+   const rs=new R.Sprite(new R.SpriteMaterial({map:new R.CanvasTexture(rc),transparent:true,depthTest:false,opacity:.92}));rs.scale.set(1.5,.42,1);rs.position.set(0,2.45,.4);rs.renderOrder=8;body.add(rs);RS=rs}}
  // ---- materiali ----
  const mP=new R.MeshPhysicalMaterial({vertexColors:true,metalness:.2,roughness:.34,clearcoat:.9,clearcoatRoughness:.06,envMapIntensity:1}),mR=new R.MeshStandardMaterial({vertexColors:true,metalness:0,roughness:.7}),
   mG=new R.MeshPhysicalMaterial({color:0xa9cfe6,metalness:0,roughness:.05,transparent:true,opacity:.45,side:R.DoubleSide,depthWrite:false,envMapIntensity:1.6}),mL=new R.MeshBasicMaterial({vertexColors:true});
@@ -855,7 +873,7 @@ function makeBike(col,helm,tag){const g=new R.Group(),lean=new R.Group(),body=ne
  if(tag){const mt=new R.MeshBasicMaterial({map:label(tag,256,96,'#ff5200','#101114','900 78px sans-serif')}),m2=new R.MeshBasicMaterial({map:label('28',128,96,'#17181c','#ff5200','900 80px sans-serif')});for(const sd of[-1,1]){const a=new R.Mesh(new R.PlaneGeometry(.42,.16),mt);a.position.set(sd*.205,.58,.5);a.rotation.set(0,sd*Math.PI/2,-.5*sd);body.add(a);const b2=new R.Mesh(new R.PlaneGeometry(.2,.15),m2);b2.position.set(sd*.185,1.32,-.02);b2.rotation.y=sd*Math.PI/2;body.add(b2)}}
  const sh=new R.Mesh(new R.CircleGeometry(.9,18).rotateX(-Math.PI/2).scale(.5,1,2.1),new R.MeshBasicMaterial({color:0,transparent:true,opacity:.28,depthWrite:false}));sh.position.y=.02;g.add(sh);
  const fl=new R.Group();{const am=(c,o)=>new R.MeshBasicMaterial({color:c,transparent:true,opacity:o,blending:R.AdditiveBlending,depthWrite:false});const c1=new R.Mesh(new R.ConeGeometry(.3,2.8,10,1,true),am(0x1f6bff,.55)),c2=new R.Mesh(new R.ConeGeometry(.16,1.8,10,1,true),am(0x9fdcff,.85)),c3=new R.Mesh(new R.ConeGeometry(.07,1.0,8,1,true),am(0xffffff,.95));for(const c of[c1,c2,c3]){c.rotation.x=-Math.PI/2;fl.add(c)}c2.position.z=-.5;c3.position.z=-.8;c1.position.z=-.3;fl.position.set(0,1.05,-2.7);fl.visible=false;lean.add(fl)}
- scene.add(g);return{g,lean,fl,wf,wr}}
+ scene.add(g);return{g,lean,fl,wf,wr,arms:fnArms}}
 const player={name:'You',...makeBike(0xff6a00,0xffffff,'KTM')};
 
 // ---------- traffic ----------
@@ -927,7 +945,7 @@ function placeCars(){const pd=player.dist;for(const c of cars){const d=wrapD(c.s
 // ---------- game state ----------
 const touch=IS_TOUCH;const keys={};let state='menu',cd=0,lapSeen=1,raceT=0,camMode=1,camYaw=0;
 let best=0;try{best=+localStorage.getItem('gpk_best2'+LK)||0}catch(e){}
-function reset(){const p=player;p.v=0;p.lv=0;p.leanT=0;p.fin=false;p.nitro=100;p.dist=-38;p.x=-2;p.score=0;p.good=0;p.bad=0;p.near=0;p.boosts=0;p.bt=0;p.btier=0;p.fueled=false;p.extra=false;p.asked=false;p.radW=new Set();p.radP=new Set();p.radar=0;p.bp=0;p.abs=false;p.sec=0;p.pl=-1;p.fuelT=0;p.hint=false;p.usedSt=new Set();p.glass=0;p.flat=false;p.fixT=0;p.hint2=false;AU.cdN=-1;{const x=document.getElementById('xl');if(x)x.style.display='none'}p.crashes=0;p.lives=3;livesUI();p.combo=1;p.comboT=0;p.crashT=0;p.inv=0;p.crashDir=1;
+function reset(){const p=player;p.k10=0;p.cheerT=0;p.heartT=0;p.v=0;p.lv=0;p.leanT=0;p.fin=false;p.nitro=100;p.dist=-38;p.x=-2;p.score=0;p.good=0;p.bad=0;p.near=0;p.boosts=0;p.bt=0;p.btier=0;p.fueled=false;p.extra=false;p.asked=false;p.radW=new Set();p.radP=new Set();p.radar=0;p.bp=0;p.abs=false;p.sec=0;p.pl=-1;p.fuelT=0;p.hint=false;p.usedSt=new Set();p.glass=0;p.flat=false;p.fixT=0;p.hint2=false;AU.cdN=-1;{const x=document.getElementById('xl');if(x)x.style.display='none'}p.crashes=0;p.lives=3;livesUI();p.combo=1;p.comboT=0;p.crashT=0;p.inv=0;p.crashDir=1;
  lapSeen=1;raceT=0;resetCars();respawnB();camYaw=Math.atan2(at(p.dist).tx,at(p.dist).tz)}
 
 // ---------- giroskop: krmiljenje z nagibom telefona ----------
@@ -954,7 +972,7 @@ function checkTraffic(dt){const p=player;if(p.comboT>0){p.comboT-=dt;if(p.comboT
  for(const c of cars){const d=wrapD(c.s-p.dist),dx=Math.abs((c.ex!=null?c.ex:c.x)-p.x);
   if(p.crashT<=0&&p.inv<=0&&Math.abs(d)<c.len/2+1.1&&dx<c.w/2+.45){crash()}
   if(c.pd>0&&d<=0&&c.pd<20&&p.v>14&&p.crashT<=0){const gap=dx-c.w/2-.4;
-   if(gap<1.4){const base=c.dir<0?60:30;p.combo=Math.min(5,p.combo+(p.comboT>0?1:0));p.comboT=4;const pts=base*p.combo;p.score+=pts;p.near++;sfx('pass');p.nitro=Math.min(100,p.nitro+(c.dir<0?18:10));
+   if(gap<1.4){const base=c.dir<0?60:30;p.combo=Math.min(5,p.combo+(p.comboT>0?1:0));p.comboT=4;const pts=base*p.combo;p.score+=pts;p.near++;p.cheerT=1.6;sfx('pass');p.nitro=Math.min(100,p.nitro+(c.dir<0?18:10));
     pop('🚗 Bližnje prehitevanje! +'+pts+(p.combo>1?'  ×'+p.combo:''),1)}}
   c.pd=d}}
 function simPlayer(dt){const p=player,done=state==='done',cr=p.crashT>0;
@@ -977,7 +995,7 @@ function simPlayer(dt){const p=player,done=state==='done',cr=p.crashT>0;
  if(Math.abs(p.x)>W/2+22){p.x=Math.sign(p.x)*(W/2+22);p.v*=.97;p.lv=0}
   if(inMW(p.dist)&&p.crashT<=0){const gap=inGap(p.dist);if(p.x>W/2+.7&&!inSlip(p)){p.x=W/2+.7;if(p.lv>0)p.lv=-p.lv*.25;p.v*=Math.exp(-1.2*dt)}if(gap){p.rail=0}else if(p.x>-.75&&p.x<.75){const lf=p.x>.1;p.x=lf?.75:-.75;if(lf?p.lv<0:p.lv>0)p.lv=-p.lv*.25;p.v*=Math.exp(-1.2*dt);if(!p.rail){p.rail=1;sfx('bad');msg('🚧 Sredinska ograja – avtocesta',1200)}}else p.rail=0;
    if(p.x<-(W/2+.7)&&!inSlip(p)){p.x=-(W/2+.7);if(p.lv<0)p.lv=-p.lv*.25;p.v*=Math.exp(-1.2*dt)}}
- const d0=p.dist;p.dist+=p.v*dt;p.leanT=cl(-k*p.v*1.2-steer*.25,-.7,.7);p.off=off||shd;p.nOn=nOn;petrolCheck(dt);rbPush(p,dt);if(state==='race')radarCheck(d0,p);
+ const d0=p.dist;p.dist+=p.v*dt;p.leanT=cl(-k*p.v*1.2-steer*.25,-.7,.7);p.off=off||shd;p.nOn=nOn;petrolCheck(dt);rbPush(p,dt);p.cheerT=Math.max(0,(p.cheerT||0)-dt);p.heartT=Math.max(0,(p.heartT||0)-dt);if(OPEN){const k10=Math.floor(Math.max(0,p.dist)/FIN*REALKM/10);if(k10>(p.k10||0)){p.k10=k10;p.heartT=3.2;pop('💗 '+k10*10+' km!',1)}}if(state==='race')radarCheck(d0,p);
  if(p.crashT>0){p.crashT-=dt;if(p.crashT<=0)afterCrash()}if(p.inv>0)p.inv-=dt;
  if(!p.fin&&p.dist>=FIN){if(p.flat){raceT+=30;pop(OPEN?'🥀 Ovenele rože na cilju: +30 s':'🛞 Prazna guma na cilju: +30 s',0)}p.fin=true;state='done';finish()}}
 function radarCheck(d0,p){const kmh=Math.round(p.v*3.6);if(!p.radW)p.radW=new Set();if(!p.radP)p.radP=new Set();
@@ -1140,7 +1158,7 @@ function drawMM(){const pl=player,W2=352,H2=196,sc=.2,sd=pl.dist,s=at(sd),fx=s.t
 function placePlayer(now){const p=player,s=at(p.dist),base=Math.atan2(s.tx,s.tz),yaw=cl(p.lv/Math.max(p.v,20),-.3,.3)*.8,cr=p.crashT>0;
  const ph=cr?1.5-p.crashT:0;
  p.g.position.set(s.x+s.tz*p.x,.05+(cr?Math.max(0,Math.sin(ph*3.2))*1.1:0),s.z-s.tx*p.x);p.g.rotation.y=base+yaw+(cr?p.crashDir*Math.min(ph,.9)*1.2:0);
- const tl=cr?p.crashDir*1.5:p.leanT;p.lean.rotation.z+=(tl-p.lean.rotation.z)*(cr?.2:.15);p.base=base;
+ if(p.arms){const tt=performance.now()/1000,d2=Math.min(.1,tt-(p._at||tt));p._at=tt;p.arms(d2,p.cheerT>0&&!cr,p.heartT>0&&!cr,tt)}const tl=cr?p.crashDir*1.5:p.leanT;p.lean.rotation.z+=(tl-p.lean.rotation.z)*(cr?.2:.15);p.base=base;
  p.g.visible=camMode===0&&!(p.inv>0&&Math.floor(now/90)%2)}
 
 // ---------- cockpit (prva oseba) ----------
