@@ -312,10 +312,11 @@ const PS=[];for(let i=0;i<N;i+=(OPEN?10:5))PS.push(P[i]);
 function trackD(x,z){let m=1e18;for(let i=0;i<PS.length;i++){const q=PS[i],dx=q.x-x,dz=q.z-z,d=dx*dx+dz*dz;if(d<m)m=d}return Math.sqrt(m)}
 const CX0=760,CZ0=420;
 function forestMaskF(x,z,h){return smooth(.46,.60,fbm(x*.0042+7,z*.0042+1.3,3))*(h>6?1:.55)}
-const LJP=OPEN?at(22/117*.975*L):null;
+const LJP=OPEN?at(22/117*.975*L):null,VS=OPEN?L*94.5/117*.975:0,VH=300,VD=70,VQ=OPEN?at(VS):null;
+function gorge(x,z){if(!OPEN)return 0;const dx=x-VQ.x,dz=z-VQ.z,t=Math.abs(dx*VQ.tx+dz*VQ.tz),l=Math.abs(dx*VQ.tz-dz*VQ.tx);return VD*(1-smooth(70,340,t))*(1-smooth(450,1500,l))}
 function hillF(x,z,d){const flat=smooth(300,760,d),n1=Math.max(0,fbm(x*.0019+10,z*.0019+3,4)-.30)/.7,rg=1-Math.abs(2*fbm(x*.0012+50,z*.0012-20,3)-1),rc=OPEN?d+1500:Math.hypot(x-CX0,z-CZ0),far=smooth(2450,4300,rc);
  const hs=OPEN?.07+.93*(1-smooth(2500,6500,Math.hypot(x-LJP.x,z-LJP.z))):1;
- return -.3+flat*(n1*190+rg*rg*70*far)*hs+far*far*210*(.35+.65*fbm(x*.0011-5,z*.0011+9,3))*hs}
+ return -.3+flat*(n1*190+rg*rg*70*far)*hs+far*far*210*(.35+.65*fbm(x*.0011-5,z*.0011+9,3))*hs-gorge(x,z)}
 for(let iz=0;iz<TZn;iz++)for(let ix=0;ix<TXn;ix++){const x=TB.x0+ix*TDX,z=TB.z0+iz*TDZ,d=trackD(x,z),h=hillF(x,z,d),k=iz*TXn+ix;THt[k]=h;TDt[k]=d;FMk[k]=forestMaskF(x,z,h)}
 function gh(x,z){const fx=(x-TB.x0)/TDX,fz=(z-TB.z0)/TDZ;if(fx<0||fz<0||fx>=TB.nx||fz>=TB.nz)return-.3;const ix=Math.floor(fx),iz=Math.floor(fz),u=fx-ix,v=fz-iz,k=iz*TXn+ix;return THt[k]*(1-u)*(1-v)+THt[k+1]*u*(1-v)+THt[k+TXn]*(1-u)*v+THt[k+TXn+1]*u*v}
 function gd(x,z){const fx=(x-TB.x0)/TDX,fz=(z-TB.z0)/TDZ;if(fx<0||fz<0||fx>=TB.nx||fz>=TB.nz)return 9999;const ix=Math.floor(fx),iz=Math.floor(fz),u=fx-ix,v=fz-iz,k=iz*TXn+ix;return TDt[k]*(1-u)*(1-v)+TDt[k+1]*u*(1-v)+TDt[k+TXn]*(1-u)*v+TDt[k+TXn+1]*u*v}
@@ -324,12 +325,12 @@ function gf(x,z){const fx=(x-TB.x0)/TDX,fz=(z-TB.z0)/TDZ;if(fx<0||fz<0||fx>=TB.n
  for(let iz=0;iz<TZn;iz++)for(let ix=0;ix<TXn;ix++){const k=iz*TXn+ix,x=TB.x0+ix*TDX,z=TB.z0+iz*TDZ,h=THt[k];pos[k*3]=x;pos[k*3+1]=h;pos[k*3+2]=z;uv[k*2]=x/14;uv[k*2+1]=z/14;
   const nz=fbm(x*.012,z*.012,3),fm=FMk[k];c.setHex(0x7fb24e).lerp(c2.setHex(0x5d9442),nz);
   if(fbm(x*.006+30,z*.006,2)>.62&&h<40)c.lerp(c2.setHex(0xc2b765),.5);
-  c.lerp(c2.setHex(0x335c2e),fm*.9);if(h>150)c.lerp(c2.setHex(0x8c9483),smooth(150,300,h)*.6);
+  c.lerp(c2.setHex(0x335c2e),fm*.9);if(h<-10)c.lerp(c2.setHex(0x8f8a7c),Math.min(1,(-10-h)/25)*.9);if(h>150)c.lerp(c2.setHex(0x8c9483),smooth(150,300,h)*.6);
   col[k*3]=c.r;col[k*3+1]=c.g;col[k*3+2]=c.b}
  for(let iz=0;iz<TB.nz;iz++)for(let ix=0;ix<TB.nx;ix++){const a=iz*TXn+ix,b=a+TXn,cc=a+1,d=b+1;idx.push(a,b,cc,cc,b,d)}
  const g=new R.BufferGeometry();g.setAttribute('position',new R.BufferAttribute(pos,3));g.setAttribute('uv',new R.BufferAttribute(uv,2));g.setAttribute('color',new R.BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();
  const gtx=PH.gtx=grassTex(),gnm=PH.gnm=pbrFrom(gtx,2.6,.78,.2),terr=new R.Mesh(g,new R.MeshStandardMaterial({map:gtx,normalMap:gnm.normal,normalScale:new R.Vector2(1.1,1.1),roughnessMap:gnm.rough,roughness:1,metalness:0,vertexColors:true}));terr.receiveShadow=true;terr.userData.nc=1;scene.add(terr);
- const skirt=new R.Mesh(new R.PlaneGeometry(30000,30000).rotateX(-Math.PI/2),new R.MeshBasicMaterial({color:0x6e8d5c}));skirt.position.set(OPEN?(TB.x0+TB.x1)/2:760,-6,OPEN?(TB.z0+TB.z1)/2:420);scene.add(skirt);window.SKIRT=skirt}
+ const skirt=new R.Mesh(new R.PlaneGeometry(30000,30000).rotateX(-Math.PI/2),new R.MeshBasicMaterial({color:0x6e8d5c}));skirt.position.set(OPEN?(TB.x0+TB.x1)/2:760,OPEN?-100:-6,OPEN?(TB.z0+TB.z1)/2:420);scene.add(skirt);window.SKIRT=skirt}
 // cesta: asfalt s sledmi, bankine iz gramoza
 {const at0=asphaltTex(),gv=gravelTex();PH.at0=at0;
  ribbonTex(-W/2,W/2,.05,(()=>{const pb=PH.apb=pbrFrom(at0,3.2,.62,.34);return new R.MeshStandardMaterial({map:at0,normalMap:pb.normal,normalScale:new R.Vector2(1,1),roughnessMap:pb.rough,roughness:1,metalness:0,envMapIntensity:.55})})(),32).material.map.repeat.set(1,1);
@@ -606,7 +607,12 @@ if(OPEN){const KMF=k=>k/117*.975,mt=c=>new R.MeshLambertMaterial({color:c}),hg=n
   const q=tops[0],tw=new R.Group();for(let k=0;k<8;k++){const c=new R.Mesh(new R.CylinderGeometry(.9-k*.07,1.0-k*.07,7,10),mt(k%2?0xffffff:0xd23a3a));c.position.y=3.5+k*7;tw.add(c)}
   const bx=new R.Mesh(hg,mt(0xcfd3d8));bx.scale.set(7,3.2,6);bx.position.set(3,1.6,0);tw.add(bx);const dish=new R.Mesh(new R.CylinderGeometry(2,.4,.6,12),mt(0xeeeeee));dish.position.set(0,44,1.2);dish.rotation.x=1.3;tw.add(dish);
   tw.scale.setScalar(1.6);tw.position.set(q.x,306,q.z);scene.add(tw);ring(q,[40,120,220,320,420]);
-  const sgn=new R.Mesh(new R.BoxGeometry(11,3,.3),new R.MeshBasicMaterial({map:label('⛰️ NANOS 1313 m',512,128,'#5a3418','#ffffff','bold 56px sans-serif')}));const sq=P2(KMF(83)-.0004,-(W/2+9));sgn.position.set(sq.x,6,sq.z);sgn.rotation.y=sq.yaw+Math.PI;scene.add(sgn);const sp=new R.Mesh(new R.CylinderGeometry(.2,.2,6,6),mt(0x555555));sp.position.set(sq.x,3,sq.z);scene.add(sp)}
+  roadSign(KMF(83)-.0006,'⛰️ NANOS  1313 m','#5a3418','#ffffff',6.4)}
+ // Viadukt Črni Kal: cesta čez globoko sotesko
+ {const n=Math.ceil(2*VH/24);for(let k=0;k<n;k++){const sv=VS-VH+k*24+12,a=at(sv),g=new R.Group();box(W+3.4,2.4,25,0xb9b6ae,0,-1.5,0,g);for(const sd of[-1,1])box(.5,.55,25,0xd8d6d0,sd*(W/2+1.2),.27,0,g);g.position.set(a.x,0,a.z);g.rotation.y=Math.atan2(a.tx,a.tz);scene.add(g)}
+  for(let sv=VS-VH+30;sv<=VS+VH-20;sv+=72)for(const sd of[-1,1]){const a=at(sv),x=a.x+a.tz*sd*5.2,z=a.z-a.tx*sd*5.2,fl=gh(x,z),h=-2.6-fl;if(h<3)continue;const g=new R.Group();box(3.2,h,3.2,0xb9b6ae,0,fl+h/2,0,g);box(4.6,2,4.6,0xa7a49c,0,fl+1,0,g);box(5,1.4,4.6,0xc9c5bc,0,-3.3,0,g);g.position.set(x,0,z);g.rotation.y=Math.atan2(a.tx,a.tz);scene.add(g)}
+  const wp=new R.Mesh(new R.PlaneGeometry(110,2400).rotateX(-Math.PI/2),new R.MeshBasicMaterial({color:0x3b87b8}));wp.position.set(VQ.x,-VD+2.5,VQ.z);wp.rotation.y=Math.atan2(VQ.tx,VQ.tz)+Math.PI/2;scene.add(wp);
+  roadSign(VS/L-.012,'🌉 VIADUKT ČRNI KAL','#0b4ea2','#ffffff',6.4);roadSign(VS/L+.0,'VIADUKT','#0b4ea2','#ffffff',4,1)}
  // Trst: morje, svetilnik, ladje
  {const f1=FIN/L,pos=[],idx=[];for(let k=0,d=FIN-1700;d<=FIN+120;d+=24,k++){const a=at(d);for(const o of[W/2+40,W/2+300])pos.push(a.x+a.tz*o,.16,a.z-a.tx*o);if(k>0){const b=(k-1)*2;idx.push(b,b+2,b+1,b+1,b+2,b+3)}}
   const sg=new R.BufferGeometry();sg.setAttribute('position',new R.Float32BufferAttribute(pos,3));sg.setIndex(idx);sg.computeVertexNormals();const nn=sg.attributes.normal;for(let i=0;i<nn.count;i++)if(nn.getY(i)<0)nn.setXYZ(i,-nn.getX(i),-nn.getY(i),-nn.getZ(i));
@@ -700,7 +706,7 @@ const arbBand=s=>OPEN?false:(s>.685*L&&s<.775*L);
   else if(kind===1){if(rn()<.27)col.setHex(autumn[rn()*5|0]).offsetHSL(rr(-.02,.02),0,rr(-.04,.05));else col.setHSL(rr(.19,.3),rr(.45,.62),rr(.22,.33));c.de.push([o.matrix.clone(),col.clone()])}
   else{o.scale.set(sc,sc*rr(.7,1.1),sc*rr(.9,1.4));o.updateMatrix();col.setHSL(rr(.22,.32),rr(.45,.62),rr(.13,.24));if(rn()<.12)col.setHex(autumn[rn()*5|0]);c.bu.push([o.matrix.clone(),col.clone()])}};
  // grmovje ob cesti
- for(let s=8;s<L;s+=rr(3.5,8)){const a=at(s);for(const side of[-1,1]){if(rn()<.35||(OPEN&&s>L*.655&&rn()<.92))continue;const off=side*(W/2+rr(8.2,17)),x=a.x+a.tz*off,z=a.z-a.tx*off;if(nearSt(x,z,30)||hasTown(x,z,9))continue;place(x,z,2,rr(.55,1.25))}}
+ for(let s=8;s<L;s+=rr(3.5,8)){const a=at(s);for(const side of[-1,1]){if(rn()<.35||(OPEN&&s>L*.655&&rn()<.92)||(OPEN&&Math.abs(s-VS)<VH+60))continue;const off=side*(W/2+rr(8.2,17)),x=a.x+a.tz*off,z=a.z-a.tx*off;if(nearSt(x,z,30)||hasTown(x,z,9))continue;place(x,z,2,rr(.55,1.25))}}
  // gozd ob cesti: skupine dreves
  for(let tr=0,n=0;tr<(OPEN?95000:36000)&&n<(OPEN?13000:6000);tr++){const s=rr(0,L),a=at(s),side=rn()<.5?-1:1,off=side*(W/2+rr(17,230)),x=a.x+a.tz*off,z=a.z-a.tx*off,d=Math.abs(off)-W/2;
   const cl=fbm(x*.016+3,z*.016+8,2),dens=d<45?(cl>.52?.8:.07):(cl>.5?.7:.1);if(rn()>dens)continue;if(OPEN&&s>L*.655)continue;
@@ -737,11 +743,11 @@ const arbBand=s=>OPEN?false:(s>.685*L&&s<.775*L);
 // oblaki ob poti (2. stopnja)
 if(OPEN){for(let i=0;i<70;i++){const q=at(rr(0,L)),sd=rn()<.5?-1:1,o=sd*rr(300,3500),s2=new R.Sprite(cloudMats[i%4]);s2.position.set(q.x+q.tz*o,rr(700,1700),q.z-q.tx*o);const w=rr(1100,2100);s2.scale.set(w,w*.46,1);s2.renderOrder=-5;scene.add(s2);clouds.push(s2)}}
 // bottles
-const bottles=[],FT=[{n:'Marjetica',v:10,c:0xffffff,ctr:0xffd23f,w:30},{n:'Vrtnica',v:25,c:0xe0245e,ctr:0xffb3c6,w:26},{n:'Tulipan',v:50,c:0xff8c1a,ctr:0xffd23f,w:18},{n:'Orhideja',v:100,c:0xb44be1,ctr:0xffffff,w:8},{n:'Šopek',v:200,c:0xff6fb5,w:0,big:1},{n:'Uvela roža',v:-60,c:0x7a6a4a,w:7,broken:1}],BT0=[{n:'Cviček',v:10,c:0xb03a48,w:30},{n:'Laški rizling',v:25,c:0x8fbf5a,w:26},{n:'Teran',v:50,c:0x5a1226,w:18},{n:'Rebula',v:100,c:0xe8c75a,w:8},{n:'Penina',v:200,c:0x1f4d2e,w:0},{n:'Razbita',v:-60,c:0xaa2233,w:4,broken:1}],BT=OPEN?FT:BT0;
+const bottles=[],FT=[{n:'Marjetica',v:10,c:0xffffff,ctr:0xffd23f,w:30},{n:'Vrtnica',v:25,c:0xe0245e,ctr:0xffb3c6,w:26},{n:'Tulipan',v:50,c:0xff8c1a,ctr:0xffd23f,w:18},{n:'Orhideja',v:100,c:0xb44be1,ctr:0xffffff,w:8},{n:'Šopek',v:200,c:0xff6fb5,w:0,big:1},{n:'Uvela roža',v:-60,c:0x7a6a4a,w:15,broken:1}],BT0=[{n:'Cviček',v:10,c:0xb03a48,w:30},{n:'Laški rizling',v:25,c:0x8fbf5a,w:26},{n:'Teran',v:50,c:0x5a1226,w:18},{n:'Rebula',v:100,c:0xe8c75a,w:8},{n:'Penina',v:200,c:0x1f4d2e,w:0},{n:'Razbita',v:-60,c:0xaa2233,w:4,broken:1}],BT=OPEN?FT:BT0;
 BT.forEach(t=>t.m=new R.MeshPhongMaterial({color:t.c,emissive:t.c,emissiveIntensity:.26,shininess:120,specular:0xffffff}));
 const gB=new R.CylinderGeometry(.2,.24,.8,12).translate(0,.4,0),gN=new R.CylinderGeometry(.08,.1,.45,8).translate(0,1.02,0),gK=new R.CylinderGeometry(.09,.09,.1,8).translate(0,1.3,0),gL=new R.PlaneGeometry(.3,.35),gR=new R.RingGeometry(.9,1.2,20).rotateX(-Math.PI/2),gP=new R.CircleGeometry(1.1,14).rotateX(-Math.PI/2),gS=new R.TetrahedronGeometry(.18),gBeam=new R.CylinderGeometry(.55,.9,7,14,1,true).translate(0,3.5,0),gCage=new R.TorusGeometry(.1,.018,6,12).rotateX(Math.PI/2);
 const mCork=new R.MeshLambertMaterial({color:0x6b4a2a}),mLab=new R.MeshBasicMaterial({color:0xfff6d8}),mFoil=new R.MeshPhongMaterial({color:0xd4af37,shininess:130,specular:0xffeeaa,emissive:0x6a5000,emissiveIntensity:.55}),mRing=new R.MeshBasicMaterial({color:0xffe27a,transparent:true,opacity:.55}),mPud=new R.MeshBasicMaterial({color:0x6d0f1c}),mBeam=new R.MeshBasicMaterial({color:0xffd966,transparent:true,opacity:.2,depthWrite:false,side:R.DoubleSide,blending:R.AdditiveBlending,fog:false});
-const mBadR=new R.MeshBasicMaterial({color:0xff2a2a,transparent:true,opacity:.8,depthWrite:false}),BADTEX=label('🥀 −60',256,96,'#b3122a','#ffffff','bold 56px sans-serif'),mGold=new R.MeshBasicMaterial({color:0xffc400,transparent:true,opacity:.9}),gX2=new R.PlaneGeometry(.9,.45),mX2=new R.MeshBasicMaterial({map:label('×2',96,48,'#ffc400','#3a2400','bold 40px sans-serif'),transparent:true});
+const mGold=new R.MeshBasicMaterial({color:0xffc400,transparent:true,opacity:.9}),gX2=new R.PlaneGeometry(.9,.45),mX2=new R.MeshBasicMaterial({map:label('×2',96,48,'#ffc400','#3a2400','bold 40px sans-serif'),transparent:true});
 function pickT(){let r=Math.random()*BT.reduce((a,t)=>a+t.w,0);for(const t of BT){if((r-=t.w)<0)return t}return BT[0]}
 const FGEO={},FMAT=new R.MeshPhongMaterial({vertexColors:true,emissive:0x2a1420,shininess:25,side:R.DoubleSide});
 function flowerGeo(t){if(FGEO[t.n])return FGEO[t.n];const B=MB(),o=new R.Object3D(),G=0x2f8a3a,add=(geo,x,y,z,sx,sy,sz,rx,ry,rz,c)=>{o.position.set(x,y,z);o.rotation.set(rx||0,ry||0,rz||0);o.scale.set(sx,sy,sz);o.updateMatrix();B.add(geo,o.matrix,c)};
@@ -754,8 +760,7 @@ function flowerGeo(t){if(FGEO[t.n])return FGEO[t.n];const B=MB(),o=new R.Object3
  return FGEO[t.n]=B.build()}
 function mkFlower(t,s,x){const a=at(s),g=new R.Group(),inn=new R.Group();g.add(inn);inn.add(new R.Mesh(flowerGeo(t),FMAT));
  const rg=new R.Mesh(gR,t.big?new R.MeshBasicMaterial({color:0xffd24d,transparent:true,opacity:.75}):mRing);rg.position.y=.09;rg.scale.setScalar(t.big?1.15:.7);if(!t.broken)g.add(rg);
- if(t.broken){const br=new R.Mesh(gR,mBadR);br.position.y=.1;br.scale.setScalar(1.6);g.add(br);const sp=new R.Sprite(new R.SpriteMaterial({map:BADTEX,transparent:true,depthTest:false}));sp.position.y=1.9;sp.scale.set(1.7,.64,1);g.add(sp)}
- g.scale.setScalar(t.broken?2.5:t.big?2.8:2.2);
+ g.scale.setScalar(t.broken?1.8:t.big?2.8:2.2);
  if(x>0&&!t.broken){const dr=new R.Mesh(gR,mGold);dr.position.y=.1;dr.scale.setScalar(1.15);g.add(dr);const tg=new R.Mesh(gX2,mX2);tg.position.set(0,1.9,0);tg.rotation.y=Math.PI;inn.parent.add(tg)}
  g.position.set(a.x+a.tz*x,.05,a.z-a.tx*x);scene.add(g);return{g,in:inn,s,x,t,got:false,spin:!t.broken}}
 function mkBottle(t,s,x){if(OPEN)return mkFlower(t,s,x);const a=at(s),g=new R.Group(),inn=new R.Group();g.add(inn);
@@ -1550,7 +1555,7 @@ function frame(now){const rdt=(now-last)/1000,dt=Math.min(.05,rdt);last=now;cons
   $('kmh').firstChild.nodeValue=Math.round(p.v*3.6);if(camMode===1)drawDash(Math.round(p.v*3.6),p);$('nb').style.width=p.nitro+'%';{const rg=$('nrg');rg.style.strokeDashoffset=100-p.nitro;rg.style.stroke=p.nitro<25?'#ff9f0a':''}$('vg').className=p.nOn?'n':'';
   $('pos').textContent='⭐ '+Math.floor(p.score);$('sc').textContent=ICO+' '+p.good+' · 🚗 '+p.near+' · ⚡ '+(p.boosts||0)+(p.combo>1?' · ×'+p.combo:'')+(p.flat?(OPEN?' · 🥀 PRETEŽKO max 90':' · 🛞 PRAZNA max 90'):p.glass?(OPEN?' · 🥀 ':' · 🛞 ')+p.glass+'/3':'');
   const rem=Math.max(0,(FIN-Math.max(0,p.dist))/FIN*REALKM);cakeG.visible=p.dist>FIN-1600;if(window.famG){famG.visible=cakeG.visible;if(famG.visible)famG.userData.w.forEach((a,i)=>{a.rotation.z=(i%2?1:-1)*(-2.5+.35*Math.sin(performance.now()/160+i*1.3))})}$('lap').textContent='🏁 '+rem.toFixed(1).replace('.',',')+(OPEN?' km do Trsta · ':' km do Kamnika · ')+fmt(raceT);
-  if(OPEN){if(state==='race'){const ig=inGap(p.dist);if(ig&&!p.ig)msg('↔ Vozita lahko po obeh straneh avtoceste (×2 rožice na levi, a nasproten promet!)',3600);p.ig=ig;const gl=GPLACES;let pi=-1;for(let i=0;i<gl.length;i++)if(p.dist>=L*gl[i][1]-60)pi=i;if(pi>(p.pl==null?-1:p.pl)){p.pl=pi;msg('📍 '+gl[pi][0],2200)}}}else{const sec=p.dist>=L*.885?3:p.dist>=MW1?2:p.dist>=MW0?1:0;if(state==='race'&&sec>(p.sec||0)){p.sec=sec;msg(['','🛣️ AVTOCESTA Ljubljana – Trzin','Konec avtoceste – Trzin, Domžale … regionalna cesta proti Kamniku','KAMNIK – torta čaka na cilju! 🎂'][sec],2600)}}
+  if(OPEN){if(state==='race'){const ig=inGap(p.dist);if(ig&&!p.ig)msg('↔ Vozita lahko po obeh straneh avtoceste (×2 rožice na levi, a nasproten promet!)',3600);p.ig=ig;{const iv=Math.abs(p.dist-VS)<VH;if(iv&&!p.iv)msg('🌉 Viadukt Črni Kal – 70 m nad dolino',3400);p.iv=iv}const gl=GPLACES;let pi=-1;for(let i=0;i<gl.length;i++)if(p.dist>=L*gl[i][1]-60)pi=i;if(pi>(p.pl==null?-1:p.pl)){p.pl=pi;msg('📍 '+gl[pi][0],2200)}}}else{const sec=p.dist>=L*.885?3:p.dist>=MW1?2:p.dist>=MW0?1:0;if(state==='race'&&sec>(p.sec||0)){p.sec=sec;msg(['','🛣️ AVTOCESTA Ljubljana – Trzin','Konec avtoceste – Trzin, Domžale … regionalna cesta proti Kamniku','KAMNIK – torta čaka na cilju! 🎂'][sec],2600)}}
   {const ab=$('abs');if(ab)ab.style.visibility=p.abs?'visible':'hidden'}
   if(state==='race'&&!$('msg').textContent){if(p.off)msg(p.shd?'BANKINA':'IZVEN CESTE',300);else if(p.nOn)msg('POSPEŠEK!',250)}
   drawMM()}
