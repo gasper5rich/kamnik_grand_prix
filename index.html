@@ -17,7 +17,7 @@ html,body{height:100%;margin:0;background:#8fc6f2;overflow:hidden;font-family:sy
 .bar{height:10px;background:rgba(255,255,255,.2);border-radius:5px;margin-top:6px;overflow:hidden}
 #nb{height:100%;width:100%;background:linear-gradient(90deg,#00b7ff,#7df9ff)}
 #big{position:fixed;top:30%;width:100%;text-align:center;font-size:84px;font-weight:900;text-shadow:0 4px 18px rgba(0,0,0,.5);pointer-events:none}
-#pop{position:fixed;top:27%;width:100%;text-align:center;font-size:30px;font-weight:900;text-shadow:0 3px 10px rgba(0,0,0,.6);pointer-events:none}#msg{position:fixed;top:19%;width:100%;text-align:center;font-size:22px;font-weight:800;letter-spacing:.08em;text-shadow:0 2px 8px rgba(0,0,0,.6);pointer-events:none}
+#pop{position:fixed;top:27%;left:10px;max-width:46vw;text-align:left;font-size:19px;line-height:1.2;z-index:4;font-weight:900;text-shadow:0 3px 10px rgba(0,0,0,.6);pointer-events:none}#msg{position:fixed;top:19%;width:100%;text-align:center;font-size:22px;font-weight:800;letter-spacing:.08em;text-shadow:0 2px 8px rgba(0,0,0,.6);pointer-events:none}
 #ov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0c1624;overflow:hidden;z-index:5}
 #bgl{position:absolute;left:-30px;top:-30px;width:calc(100% + 60px);height:calc(100% + 60px);object-fit:cover;filter:blur(22px) brightness(.55);pointer-events:none}
 #card{position:relative;display:none}
@@ -777,7 +777,7 @@ for(let i=0,NB=(OPEN?410:235);i<NB;i++){const s=120+i*(FIN-260)/NB+rnd(-18,18),t
  places.forEach(([a,c])=>{const s=L*(a+(c-a)*.5);let bi=-1,bd=1e9;bottles.forEach((o,i)=>{if(o.t===pen)return;const d=Math.abs(o.s-s);if(d<bd){bd=d;bi=i}});
   if(bi>=0){scene.remove(bottles[bi].g);bottles[bi]=mkBottle(pen,bottles[bi].s,-3.4)}})}
 function respawnB(){bottles.forEach(b=>{b.got=false;b.g.visible=true})}
-function pop(txt,good){const e=$('pop');e.textContent=txt;e.style.color=good?'#7dff9b':'#ff6b6b';clearTimeout(pop.t);pop.t=setTimeout(()=>e.textContent='',1000)}
+function pop(txt,good){const e=$('pop');{const r=$('tl').getBoundingClientRect();if(r.height){e.style.top=(r.bottom+6)+'px';e.style.left=r.left+'px'}}e.textContent=txt;e.style.color=good?'#7dff9b':'#ff6b6b';clearTimeout(pop.t);pop.t=setTimeout(()=>e.textContent='',1400)}
 function collectB(dt){const p=player,sp=((p.dist%L)+L)%L;
  for(const b of bottles){if(b.got)continue;let d=b.s-sp;d=((d+L/2)%L+L)%L-L/2;
   if(Math.abs(d)<2+p.v*dt&&Math.abs(b.x-p.x)<1.7){b.got=true;b.g.visible=false;const bv=b.t.v>0&&b.x>0?b.t.v*2:b.t.v;p.score=Math.max(0,p.score+bv);
@@ -933,13 +933,17 @@ async function loadPlane(){try{const m=await loadBikeGLB('models/cessna.glb');co
  const rope=new R.Line(new R.BufferGeometry().setFromPoints([new R.Vector3(0,0,-9),new R.Vector3(0,BH/2,-30),new R.Vector3(0,0,-9),new R.Vector3(0,-BH/2,-30)]),new R.LineBasicMaterial({color:0x333333}));
  const g=new R.Group();g.add(pg,ban,rope);g.visible=false;scene.add(g);PLANE.g=g;PLANE.prop=prop;PLANE.ban=bg;PLANE.bp=bg.attributes.position.array.slice()}catch(e){console.log('plane fail',e)}}
 loadPlane();
-function planeUpdate(dt,p,now){const P=PLANE;if(!P.g)return;P.t+=dt;const DUR=26;
- if(P.t<0){P.g.visible=false;return}
- if(!P.anc){const d=p.dist+(p.v>5?620:300),a=at(OPEN?Math.min(d,L-50):d),sd=Math.random()<.5?1:-1;P.anc={x:a.x,z:a.z,y:(p.g.position.y||0)+48+Math.random()*14,dx:-a.tz*sd,dz:a.tx*sd}}
- const A=P.anc,u=(P.t/DUR-.5)*900;P.g.visible=true;P.g.position.set(A.x+A.dx*u,A.y+Math.sin(P.t*.6)*2,A.z+A.dz*u);P.g.rotation.set(0,Math.atan2(A.dx,A.dz),Math.sin(P.t*.5)*.04);
+function planeReset(){const P=PLANE;P.on=false;P.odo=0;P.next=LV===2?1000:5000;if(P.g)P.g.visible=false}
+planeReset();
+function planeUpdate(dt,p,now){const P=PLANE;if(!P.g)return;if(P.odo==null)planeReset();
+ if(state==='race'||state==='drive')P.odo+=p.v*dt;
+ if(!P.on){P.g.visible=false;if(P.odo>=P.next){P.next+=LV===2?1000:5000;P.on=true;P.t=0;P.sd=Math.random()<.5?1:-1}else return}
+ const DUR=15;P.t+=dt;if(P.t>DUR){P.on=false;P.g.visible=false;if(P.odo>=P.next)P.next=P.odo+400;return}
+ // vedno ~150 m pred voznikom, prečka celoten pogled od enega roba do drugega
+ const a=at(OPEN?Math.min(p.dist+150,L-20):p.dist+150),sd=P.sd,dx=-a.tz*sd,dz=a.tx*sd,u=-260+(P.t/DUR)*(260+380);
+ P.g.visible=true;P.g.position.set(a.x+dx*u,(p.g.position.y||0)+33+Math.sin(P.t*.7)*1.2,a.z+dz*u);P.g.rotation.set(0,Math.atan2(dx,dz),Math.sin(P.t*.5)*.04);
  if(P.prop)P.prop.rotation.z+=dt*40;
- const a=P.ban.attributes.position.array,b=P.bp;for(let i=0;i<a.length;i+=3){const k=b[i]/80+.5;a[i+2]=b[i+2]+Math.sin(now/180-b[i]*.2)*1.4*(1-k)}P.ban.attributes.position.needsUpdate=true;
- if(P.t>DUR){P.t=-(18+Math.random()*14);P.anc=null}}
+ const ar=P.ban.attributes.position.array,b=P.bp;for(let i=0;i<ar.length;i+=3){const k=b[i]/80+.5;ar[i+2]=b[i+2]+Math.sin(now/180-b[i]*.2)*1.4*(1-k)}P.ban.attributes.position.needsUpdate=true}
 
 
 // ---------- traffic ----------
@@ -1041,7 +1045,7 @@ function placeCars(){const pd=player.dist;for(const c of cars){const d=wrapD(c.s
 // ---------- game state ----------
 const touch=IS_TOUCH;const keys={};let state='menu',cd=0,lapSeen=1,raceT=0,camMode=1,camYaw=0;
 let best=0;try{best=+localStorage.getItem('gpk_best2'+LK)||0}catch(e){}
-function reset(){const p=player;p.k10=0;p.cheerT=0;p.heartT=0;p.v=0;p.lv=0;p.leanT=0;p.fin=false;p.nitro=100;p.dist=OPEN?6:-38;p.x=-2;p.score=0;p.good=0;p.bad=0;p.near=0;p.boosts=0;p.bt=0;p.btier=0;p.fueled=false;p.extra=false;p.asked=false;p.radW=new Set();p.radP=new Set();p.radar=0;p.bp=0;p.abs=false;p.sec=0;p.pl=-1;p.fuelT=0;p.hint=false;p.usedSt=new Set();p.glass=0;p.flat=false;p.fixT=0;p.hint2=false;AU.cdN=-1;{const x=document.getElementById('xl');if(x)x.style.display='none'}p.crashes=0;p.lives=3;livesUI();p.combo=1;p.comboT=0;p.crashT=0;p.inv=0;p.crashDir=1;
+function reset(){const p=player;planeReset();p.k10=0;p.cheerT=0;p.heartT=0;p.v=0;p.lv=0;p.leanT=0;p.fin=false;p.nitro=100;p.dist=OPEN?6:-38;p.x=-2;p.score=0;p.good=0;p.bad=0;p.near=0;p.boosts=0;p.bt=0;p.btier=0;p.fueled=false;p.extra=false;p.asked=false;p.radW=new Set();p.radP=new Set();p.radar=0;p.bp=0;p.abs=false;p.sec=0;p.pl=-1;p.fuelT=0;p.hint=false;p.usedSt=new Set();p.glass=0;p.flat=false;p.fixT=0;p.hint2=false;AU.cdN=-1;{const x=document.getElementById('xl');if(x)x.style.display='none'}p.crashes=0;p.lives=3;livesUI();p.combo=1;p.comboT=0;p.crashT=0;p.inv=0;p.crashDir=1;
  lapSeen=1;raceT=0;resetCars();respawnB();camYaw=Math.atan2(at(p.dist).tx,at(p.dist).tz)}
 
 // ---------- giroskop: krmiljenje z nagibom telefona ----------
