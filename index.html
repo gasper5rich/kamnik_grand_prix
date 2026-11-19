@@ -911,7 +911,7 @@ async function upgradeBike(){try{const m=await loadBikeGLB('models/bbr2-blade.gl
  pl.wf.geometry=new R.BufferGeometry();pl.wr.geometry=new R.BufferGeometry();
  pl.wf.position.copy(cf);pl.wr.position.copy(cr);
  for(const o of pl.old)if(o!==pl.wf&&o!==pl.wr)o.visible=false;
- body.add(grp);pl.glb=grp;window.BIKEOK=1}catch(e){console.log('bike glb fail',e)}}
+ pl.fl.position.set(-.34,.86,-1.42);pl.flS=.6;pl.fl.rotation.x=.28;body.add(grp);pl.glb=grp;window.BIKEOK=1}catch(e){console.log('bike glb fail',e)}}
 upgradeBike();
 
 // letalo: "Low-poly Cessna 172" by reizergideon (CC BY 4.0) z napisom "Vse najboljše Roman!"
@@ -1602,7 +1602,7 @@ function fxUpdate(dt,p,pp){dt=Math.min(dt,.05);
    x.strokeStyle='rgba('+(p.nOn?'170,225,255':'255,255,255')+','+(.1+it*.28*Math.random())+')';x.lineWidth=rr2(.6,1.8);x.beginPath();x.moveTo(x0,y0);x.lineTo(x1,y1);x.stroke()}}
  else if(FX.slOn){FX.sx.clearRect(0,0,w,h);FX.slOn=false}
  // plamen
- if(p.fl&&p.fl.visible){const s=1+Math.random()*.25;p.fl.scale.set(1+Math.random()*.12,1+Math.random()*.12,s);if(p.nOn&&state==='race'&&Math.random()<.6){const f=at(p.dist);SPK.emit(pp.x-f.tx*2.2,.8,pp.z-f.tz*2.2,-f.tx*p.v*.3+rr2(-.8,.8),rr2(-.3,.8),-f.tz*p.v*.3+rr2(-.8,.8),.35,.25,.04,.4,.7,1,.8,0,2)}}}
+ if(p.fl&&p.fl.visible){const s=1+Math.random()*.25;{const k=p.flS||1;p.fl.scale.set(k*(1+Math.random()*.12),k*(1+Math.random()*.12),k*s)};if(p.nOn&&state==='race'&&Math.random()<.6){const f=at(p.dist);SPK.emit(pp.x-f.tx*2.2,.8,pp.z-f.tz*2.2,-f.tx*p.v*.3+rr2(-.8,.8),rr2(-.3,.8),-f.tz*p.v*.3+rr2(-.8,.8),.35,.25,.04,.4,.7,1,.8,0,2)}}}
 // animirano odštevanje
 function bigAnim(t){const b=document.getElementById('big');t=String(t);if(b.textContent===t)return;b.textContent=t;b.style.color=t==='GO!'?'#5dff8a':t==='1'?'#ffd43b':t==='2'?'#ff9f0a':'#ff6a5a';b.classList.remove('k');void b.offsetWidth;b.classList.add('k')}
 // nadzor kakovosti
