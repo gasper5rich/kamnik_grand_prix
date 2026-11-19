@@ -1,7 +1,7 @@
 // Grand Prix Kamnik – delovanje brez povezave
 // Ob vsaki novi objavi povečaj številko različice, da telefoni naložijo novo igro.
-const CACHE='gp-kamnik-v29';
-const FILES=['./','./index.html','./lestvica.html','./three.min.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./models/sedan.glb','./models/sedan-sports.glb','./models/hatchback-sports.glb','./models/suv.glb','./models/suv-luxury.glb','./models/taxi.glb','./models/van.glb','./models/delivery-flat.glb','./models/delivery.glb','./models/truck.glb','./models/truck-flat.glb','./models/garbage-truck.glb','./models/ship-Boat.glb','./models/ship-BoatWSail.glb','./models/ship-CruiseShip.glb','./models/ship-Sail-ship.glb','./models/bbr2-blade.glb'];
+const CACHE='gp-kamnik-v30';
+const FILES=['./','./index.html','./lestvica.html','./three.min.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./models/sedan.glb','./models/sedan-sports.glb','./models/hatchback-sports.glb','./models/suv.glb','./models/suv-luxury.glb','./models/taxi.glb','./models/van.glb','./models/delivery-flat.glb','./models/delivery.glb','./models/truck.glb','./models/truck-flat.glb','./models/garbage-truck.glb','./models/ship-Boat.glb','./models/ship-BoatWSail.glb','./models/ship-CruiseShip.glb','./models/ship-Sail-ship.glb','./models/bbr2-blade.glb','./models/cessna.glb'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{

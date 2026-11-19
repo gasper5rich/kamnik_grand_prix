@@ -1,0 +1,4 @@
+Model: "Low-poly Cessna 172" by reizergideon
+Source: https://sketchfab.com/3d-models/low-poly-cessna-172-42f36247680c44ffabc6b841896a375a
+License: CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
+Changes: scaled, banner added.
