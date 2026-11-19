@@ -793,7 +793,7 @@ function collectB(dt){const p=player,sp=((p.dist%L)+L)%L;
   if(Math.abs(d)<2+p.v*dt&&Math.abs(b.x-p.x)<1.7){b.got=true;b.g.visible=false;const bv=b.t.v>0&&b.x>0?b.t.v*2:b.t.v;p.score=Math.max(0,p.score+bv);
    if(b.t.v>0){p.good++;sfx(OPEN?(b.x>0||b.t.big?'good2':'good'):(b.t.n==='Penina'||b.t.big)?'cork':b.x>0?'good2':'good');pop('+'+bv+' '+b.t.n+' '+ICO+(bv!==b.t.v?' ×2!':''),1)}else{p.bad++;sfx('bad');p.v*=.9;pop(b.t.v+(OPEN?' uvela roža':' razbita steklenica'),0);{p.glass=(p.glass||0)+1;if(!p.flat){if(p.glass>=3){p.flat=true;p.hint2=false;sfx(OPEN?'bad':'flat');msg(OPEN?'🥀 3 ovenele rože! Pretežke so – ustavita se na bencinski črpalki ⛽ in jih odvrzita v smeti':'🛞 PRAZNA GUMA! Hitrost padla na 90 km/h. Gumo zamenjaj na črpalki ⛽',5200)}else msg(OPEN?'🥀 Ovenele rože '+p.glass+'/3':'⚠️ Steklo v gumi '+p.glass+'/3',1600)}}}}}}
 // ---------- bikes ----------
-function makeBike(col,helm,tag){let fnArms=null;const g=new R.Group(),lean=new R.Group(),body=new R.Group();g.add(lean);lean.add(body);body.scale.setScalar(1.2);
+function makeBike(col,helm,tag){let fnArms=null;const g=new R.Group(),lean=new R.Group(),body=new R.Group();g.add(lean);lean.add(body);body.scale.setScalar(.82);
  const Z=px=>(645-px)*.002875,Y=py=>(668-py)*.002875,I=new R.Matrix4(),V3=(a,b,c)=>new R.Vector3(a,b,c);
  const P=MB(),Rd=MB(),Gl=MB(),Wf=MB(),Wr=MB(),Lt=MB();
  const prof=(B,pts,w,bev,c)=>B.add(profGeo(pts.map(q=>[Z(q[0]),Y(q[1])]),w,bev,.2),I,c);
@@ -921,7 +921,7 @@ async function upgradeBike(){try{const m=await loadBikeGLB('models/bbr2-blade.gl
  pl.wf.geometry=new R.BufferGeometry();pl.wr.geometry=new R.BufferGeometry();
  pl.wf.position.copy(cf);pl.wr.position.copy(cr);
  for(const o of pl.old)if(o!==pl.wf&&o!==pl.wr)o.visible=false;
- pl.fl.position.set(-.34,.86,-1.42);pl.flS=.6;pl.fl.rotation.x=.28;body.add(grp);pl.glb=grp;window.BIKEOK=1}catch(e){console.log('bike glb fail',e)}}
+ pl.fl.position.set(-.23,.59,-.97);pl.flS=.42;pl.fl.rotation.x=.28;body.add(grp);pl.glb=grp;window.BIKEOK=1}catch(e){console.log('bike glb fail',e)}}
 upgradeBike();
 
 // letalo: "Low-poly Cessna 172" by reizergideon (CC BY 4.0) z napisom "Vse najboljše Roman!"
@@ -932,15 +932,15 @@ async function loadPlane(){try{const m=await loadBikeGLB('models/cessna.glb');co
  for(const p of m.parts){p.geo.translate(-c.x,-c.y,-c.z);p.geo.scale(S,S,S);if(/propeller/.test(p.name)){p.geo.computeBoundingBox();pc=p.geo.boundingBox.getCenter(new R.Vector3());p.geo.translate(-pc.x,-pc.y,-pc.z);prop=new R.Mesh(p.geo,mt);prop.position.copy(pc);inner.add(prop)}else inner.add(new R.Mesh(p.geo,mt))}
  // nos naj kaže v +z
  inner.rotation.y=-Math.atan2(pc.x,pc.z);
- const pg=new R.Group();pg.add(inner);pg.scale.setScalar(2.4);
+ const pg=new R.Group();pg.add(inner);pg.scale.setScalar(1.0);
  // transparent
  const W=1280,H=170,cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');x.fillStyle='#fffdf4';x.fillRect(0,0,W,H);x.strokeStyle='#ff5200';x.lineWidth=10;x.strokeRect(5,5,W-10,H-10);
  x.fillStyle='#d0142c';x.font='900 124px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('Vse najboljše Roman!',W/2,H/2+4);
  const tx=new R.CanvasTexture(cv);tx.colorSpace=R.SRGBColorSpace;tx.anisotropy=8;
- const BL=80,BH=13,ban=new R.Group(),bm=new R.MeshBasicMaterial({map:tx,fog:true});
+ const BL=62,BH=10,ban=new R.Group(),bm=new R.MeshBasicMaterial({map:tx,fog:true});
  const bg=new R.PlaneGeometry(BL,BH,24,1);const bf=new R.Mesh(bg,bm),bk=new R.Mesh(bg,bm);bf.rotation.y=-Math.PI/2;bk.rotation.y=Math.PI/2;ban.add(bf,bk);
- ban.position.z=-(BL/2+30);
- const rope=new R.Line(new R.BufferGeometry().setFromPoints([new R.Vector3(0,0,-9),new R.Vector3(0,BH/2,-30),new R.Vector3(0,0,-9),new R.Vector3(0,-BH/2,-30)]),new R.LineBasicMaterial({color:0x333333}));
+ ban.position.z=-(BL/2+18);
+ const rope=new R.Line(new R.BufferGeometry().setFromPoints([new R.Vector3(0,0,-4),new R.Vector3(0,BH/2,-18),new R.Vector3(0,0,-4),new R.Vector3(0,-BH/2,-18)]),new R.LineBasicMaterial({color:0x333333}));
  const g=new R.Group();g.add(pg,ban,rope);g.visible=false;scene.add(g);PLANE.g=g;PLANE.prop=prop;PLANE.ban=bg;PLANE.bp=bg.attributes.position.array.slice()}catch(e){console.log('plane fail',e)}}
 loadPlane();
 function planeReset(){const P=PLANE;P.on=false;P.odo=0;P.next=5000;P.k=0;if(P.g)P.g.visible=false}
@@ -950,10 +950,10 @@ function planeUpdate(dt,p,now){const P=PLANE;if(!P.g)return;if(P.odo==null)plane
  if(!P.on){P.g.visible=false;let go=false;if(OPEN){const k=Math.floor(Math.max(0,p.dist)/FIN*REALKM/10);if(k>P.k){P.k=k;go=true}}else if(P.odo>=P.next){P.next+=5000;go=true}if(go){P.on=true;P.t=0;P.sd=Math.random()<.5?1:-1}else return}
  const DUR=15;P.t+=dt;if(P.t>DUR){P.on=false;P.g.visible=false;if(P.odo>=P.next)P.next=P.odo+400;return}
  // vedno ~150 m pred voznikom, prečka celoten pogled od enega roba do drugega
- const a=at(OPEN?Math.min(p.dist+150,L-20):p.dist+150),sd=P.sd,dx=-a.tz*sd,dz=a.tx*sd,u=-260+(P.t/DUR)*(260+380);
- P.g.visible=true;P.g.position.set(a.x+dx*u,(p.g.position.y||0)+33+Math.sin(P.t*.7)*1.2,a.z+dz*u);P.g.rotation.set(0,Math.atan2(dx,dz),Math.sin(P.t*.5)*.04);
+ const a=at(OPEN?Math.min(p.dist+105,L-20):(((p.dist+105)%L)+L)%L),sd=P.sd,dx=-a.tz*sd,dz=a.tx*sd,u=-180+(P.t/DUR)*(180+265);
+ P.g.visible=true;P.g.position.set(a.x+dx*u,(p.g.position.y||0)+18+Math.sin(P.t*.7)*1.2,a.z+dz*u);P.g.rotation.set(0,Math.atan2(dx,dz),Math.sin(P.t*.5)*.04);
  if(P.prop)P.prop.rotation.z+=dt*40;
- const ar=P.ban.attributes.position.array,b=P.bp;for(let i=0;i<ar.length;i+=3){const k=b[i]/80+.5;ar[i+2]=b[i+2]+Math.sin(now/180-b[i]*.2)*1.4*(1-k)}P.ban.attributes.position.needsUpdate=true}
+ const ar=P.ban.attributes.position.array,b=P.bp;for(let i=0;i<ar.length;i+=3){const k=b[i]/62+.5;ar[i+2]=b[i+2]+Math.sin(now/180-b[i]*.3)*.9*(1-k)}P.ban.attributes.position.needsUpdate=true}
 
 
 // ---------- traffic ----------
@@ -1022,11 +1022,11 @@ async function loadGLB(url){const rs=await fetch(url);if(!rs.ok)throw new Error(
  const parts=[],mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];
  for(const nd of J.nodes){if(nd.mesh==null)continue;const t=nd.translation||[0,0,0];for(const p of J.meshes[nd.mesh].primitives){const g=new R.BufferGeometry();g.setAttribute('position',new R.BufferAttribute(rd(p.attributes.POSITION),3));g.setAttribute('normal',new R.BufferAttribute(rd(p.attributes.NORMAL),3));g.setAttribute('uv',new R.BufferAttribute(rd(p.attributes.TEXCOORD_0),2));g.setIndex(new R.BufferAttribute(rd(p.indices),1));
   const ac=J.accessors[p.attributes.POSITION];for(let i=0;i<3;i++){mn[i]=Math.min(mn[i],ac.min[i]+t[i]);mx[i]=Math.max(mx[i],ac.max[i]+t[i])}parts.push({geo:g,t,wheel:/wheel/.test(nd.name||'')})}}
- return{parts,tex,len:mx[2]-mn[2],wid:mx[0]-mn[0],cz:(mx[2]+mn[2])/2}}
+ return{parts,tex,len:mx[2]-mn[2],wid:mx[0]-mn[0],hei:mx[1]-mn[1],cz:(mx[2]+mn[2])/2}}
 function kMat(n,tint){const k=n+tint;return KMAT[k]||(KMAT[k]=new R.MeshStandardMaterial({map:KCM[n].tex,color:tint,roughness:.55,metalness:.12,envMapIntensity:.9}))}
 function upgradeCars(){for(const c of cars){const names=KCN[c.kind];if(!names)continue;const n=names[(Math.random()*names.length)|0],m=KCM[n];if(!m)continue;
   for(let i=c.g.children.length-1;i>=0;i--){const ch=c.g.children[i];if(ch!==c.blob)c.g.remove(ch)}
-  const wmax=c.kind==='truck'?2.9:c.kind==='van'?2.4:2.3,sc=Math.min(c.len*.85/m.len,wmax/m.wid),tint=c.kind==='car'&&n!=='taxi'?KTINT[(Math.random()*KTINT.length)|0]:0xffffff,mat=kMat(n,tint),grp=new R.Group();grp.scale.setScalar(sc);grp.position.z=-m.cz*sc;c.wh=[];
+  const wmax=c.kind==='truck'?2.55:c.kind==='van'?2.05:1.9,sc=c.len*(c.kind==='truck'?1.1:c.kind==='van'?1.04:.98)/m.len,sx=Math.min(sc,wmax/m.wid),tint=c.kind==='car'&&n!=='taxi'?KTINT[(Math.random()*KTINT.length)|0]:0xffffff,mat=kMat(n,tint),grp=new R.Group();grp.scale.set(sx,sc,sc);grp.position.z=-m.cz*sc;c.wh=[];
   for(const p of m.parts){const me=new R.Mesh(p.geo,mat);me.position.set(p.t[0],p.t[1],p.t[2]);me.castShadow=true;me.receiveShadow=true;grp.add(me);if(p.wheel)c.wh.push(me)}c.g.add(grp)}}
 async function loadKenney(){try{const all=[...new Set(Object.values(KCN).flat())];await Promise.all(all.map(async n=>{KCM[n]=await loadGLB('models/'+n+'.glb')}));upgradeCars()}catch(e){console.log('glb fail',e)}}
 loadKenney();
@@ -1657,7 +1657,7 @@ function frame(now){const rdt=(now-last)/1000,dt=Math.min(.05,rdt);last=now;cons
  // camera
  const d=Math.atan2(Math.sin(p.base-camYaw),Math.cos(p.base-camYaw));camYaw+=d*(1-Math.exp(-6*dt));
  const fx=Math.sin(camYaw),fz=Math.cos(camYaw),pp=p.g.position,sh=(p.nOn?.12:0)+(p.crashT>0?.25:0)+(p.flat?.03:0);
- if(camMode===0){cam.position.set(pp.x-fx*8.2+rnd(-sh,sh),3.7+rnd(-sh,sh),pp.z-fz*8.2);cam.lookAt(pp.x+fx*12,1.6,pp.z+fz*12)}
+ if(camMode===0){cam.position.set(pp.x-fx*6.6+rnd(-sh,sh),3.0+rnd(-sh,sh),pp.z-fz*6.6);cam.lookAt(pp.x+fx*12,1.25,pp.z+fz*12)}
  else{cam.position.set(pp.x+fx*.2+rnd(-sh,sh),1.85+rnd(-sh,sh),pp.z+fz*.2);cam.lookAt(pp.x+fx*30,-1.9,pp.z+fz*30);cam.rotateZ(-p.lean.rotation.z*1.4)}
  const fov=64+p.v*.22+(p.nOn?10:0)+(innerWidth<innerHeight?24:0);cam.fov+=(fov-cam.fov)*Math.min(1,dt*4);cam.updateProjectionMatrix();
  sky.position.copy(cam.position);sunM.position.copy(cam.position).add(new R.Vector3(-1500,1250,1700).setLength(7000));glow.position.copy(sunM.position);
