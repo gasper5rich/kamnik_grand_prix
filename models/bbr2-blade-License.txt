@@ -1,4 +1,0 @@
-Model: "bbr2 - Blade 1000 RR" by amogusstrikesback2
-Source: https://sketchfab.com/3d-models/bbr2-blade-1000-rr-6f25cfabab614132b1c8aab4ad39240c
-License: CC BY 4.0 https://creativecommons.org/licenses/by/4.0/
-Changes: recoloured to KTM orange/black, skinned parts baked, wheels split for animation.
