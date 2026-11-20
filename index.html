@@ -976,7 +976,7 @@ async function loadSplatBike(url){const b=await (await fetch(url)).arrayBuffer()
 function splatCockpit(s){const cs=s.body.make(1),G=new R.Group();G.add(cs);G.rotation.y=Math.PI;G.scale.setScalar(.82);G.position.set(0,-1.261,.005);
  ck.traverse(o=>{if(o.isMesh&&!(o.material&&(o.material.map===dtex||o.material.map===MIR.rt.texture)))o.visible=false});
  ck.traverse(o=>{if(!o.isMesh||!o.material)return;if(o.material.map===dtex){o.position.set(0,-.112,-.49);o.rotation.set(-.32,0,0);o.scale.setScalar(.62)}
-  else if(o.material.map===MIR.rt.texture){const sd=Math.sign(o.position.x);o.position.set(sd*.318,-.046,-.585);o.rotation.set(.12,sd*-.12,0);o.scale.set(.82,.82,1)}});
+  else if(o.material.map===MIR.rt.texture)o.visible=false});GFX.mirror=false;
  ck.add(G);window.COCKSPLAT=G}
 async function upgradeSplat(){try{const pl=player;if(!pl.glb)return;const s=await loadSplatBike('models/ktm-splat.bin');
  pl.glb.traverse(o=>{if(o.material){o.material=o.material.clone();o.material.colorWrite=false;o.material.depthWrite=false}});
