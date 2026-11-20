@@ -951,29 +951,37 @@ function splatMesh(pos,scl,qu,col,n,axisOnly){
   b[i*4]=m00*m00+m01*m01+m02*m02;b[i*4+1]=m00*m10+m01*m11+m02*m12;b[i*4+2]=m00*m20+m01*m21+m02*m22;b[i*4+3]=m10*m10+m11*m11+m12*m12;
   c[i*4]=m10*m20+m11*m21+m12*m22;c[i*4+1]=m20*m20+m21*m21+m22*m22;c[i*4+2]=col[i*4]*65536+col[i*4+1]*256+col[i*4+2]}
  const tx=d=>{const t=new R.DataTexture(d,1024,H,R.RGBAFormat,R.FloatType);t.minFilter=t.magFilter=R.NearestFilter;t.generateMipmaps=false;t.needsUpdate=true;return t};
- const g=new R.InstancedBufferGeometry();g.setAttribute('position',new R.Float32BufferAttribute([-2,-2,0,2,-2,0,2,2,0,-2,2,0],3));g.setIndex([0,1,2,0,2,3]);
- const idx=new Float32Array(n);for(let i=0;i<n;i++)idx[i]=i;const ia=new R.InstancedBufferAttribute(idx,1);ia.setUsage(R.DynamicDrawUsage);g.setAttribute('sidx',ia);g.instanceCount=n;
- const vp=new R.Vector2(1,1);
- const m=new R.ShaderMaterial({glslVersion:R.GLSL3,vertexShader:SPLAT_VS,fragmentShader:SPLAT_FS,uniforms:{tA:{value:tx(a)},tB:{value:tx(b)},tC:{value:tx(c)},vp:{value:vp},gain:{value:1}},transparent:true,depthWrite:false,depthTest:true,side:R.DoubleSide,blending:R.NormalBlending});
- const me=new R.Mesh(g,m);me.frustumCulled=false;me.renderOrder=5;
- const cnt=new Uint32Array(65536),dep=new Uint16Array(n),D=new Float32Array(n),last=new R.Vector3(1e9,0,0),lc=new R.Vector3(),inv=new R.Matrix4();
- let lastLim=-1;
- me.onBeforeRender=(rn,sc,cm)=>{rn.getDrawingBufferSize(vp);me.updateMatrixWorld();inv.copy(me.matrixWorld).invert();lc.setFromMatrixPosition(cm.matrixWorld).applyMatrix4(inv);
-  const gl=(window.GOV&&GOV.lv)||0,lim=Math.max(1,Math.floor(n*(gl>=2?.45:gl>=1?.72:1)));
-  if(axisOnly){if(lim===lastLim&&Math.abs(lc.x-last.x)<.05)return}else if(lim===lastLim&&lc.distanceToSquared(last)<Math.pow(.012*lc.length(),2))return;
-  last.copy(lc);lastLim=lim;g.instanceCount=lim;let mn=1e9,mx=-1e9;
-  for(let i=0;i<lim;i++){const dx=P[i*3]-lc.x;let d=dx*dx;if(!axisOnly){const dy=P[i*3+1]-lc.y,dz=P[i*3+2]-lc.z;d+=dy*dy+dz*dz}D[i]=d;if(d<mn)mn=d;if(d>mx)mx=d}
-  const k=65535/((mx-mn)||1);cnt.fill(0);for(let i=0;i<lim;i++){const v=65535-((D[i]-mn)*k|0);dep[i]=v;cnt[v]++}
-  for(let i=1;i<65536;i++)cnt[i]+=cnt[i-1];for(let i=lim-1;i>=0;i--)idx[--cnt[dep[i]]]=i;ia.needsUpdate=true};
- return me}
+ const TA=tx(a),TB=tx(b),TC=tx(c),D=new Float32Array(n),cnt=new Uint32Array(65536),dep=new Uint16Array(n);
+ const make=frac=>{const g=new R.InstancedBufferGeometry();g.setAttribute('position',new R.Float32BufferAttribute([-2,-2,0,2,-2,0,2,2,0,-2,2,0],3));g.setIndex([0,1,2,0,2,3]);
+  const idx=new Float32Array(n);for(let i=0;i<n;i++)idx[i]=i;const ia=new R.InstancedBufferAttribute(idx,1);ia.setUsage(R.DynamicDrawUsage);g.setAttribute('sidx',ia);g.instanceCount=n;
+  const vp=new R.Vector2(1,1);
+  const m=new R.ShaderMaterial({glslVersion:R.GLSL3,vertexShader:SPLAT_VS,fragmentShader:SPLAT_FS,uniforms:{tA:{value:TA},tB:{value:TB},tC:{value:TC},vp:{value:vp},gain:{value:1}},transparent:true,depthWrite:false,depthTest:true,side:R.DoubleSide,blending:R.NormalBlending});
+  const me=new R.Mesh(g,m);me.frustumCulled=false;me.renderOrder=5;
+  const last=new R.Vector3(1e9,0,0),lc=new R.Vector3(),inv=new R.Matrix4();let lastLim=-1;
+  me.onBeforeRender=(rn,sc,cm)=>{rn.getDrawingBufferSize(vp);me.updateMatrixWorld();inv.copy(me.matrixWorld).invert();lc.setFromMatrixPosition(cm.matrixWorld).applyMatrix4(inv);
+   const gl=(window.GOV&&GOV.lv)||0,lim=Math.max(1,Math.floor(n*frac*(gl>=2?.5:gl>=1?.75:1)));
+   if(lim===lastLim&&lc.distanceToSquared(last)<Math.pow(.012*lc.length(),2))return;
+   last.copy(lc);lastLim=lim;g.instanceCount=lim;let mn=1e9,mx=-1e9;
+   for(let i=0;i<lim;i++){const dx=P[i*3]-lc.x,dy=P[i*3+1]-lc.y,dz=P[i*3+2]-lc.z,d=dx*dx+dy*dy+dz*dz;D[i]=d;if(d<mn)mn=d;if(d>mx)mx=d}
+   const k=65535/((mx-mn)||1);cnt.fill(0);for(let i=0;i<lim;i++){const v=65535-((D[i]-mn)*k|0);dep[i]=v;cnt[v]++}
+   for(let i=1;i<65536;i++)cnt[i]+=cnt[i-1];for(let i=lim-1;i>=0;i--)idx[--cnt[dep[i]]]=i;ia.needsUpdate=true};
+  return me};
+ const me=make(n>100000?.64:1);me.make=make;return me}
 async function loadSplatBike(url){const b=await (await fetch(url)).arrayBuffer(),dv=new DataView(b);if(new TextDecoder().decode(new Uint8Array(b,0,4))!=='KSP2')throw new Error('fmt');
  const ns=[dv.getUint32(4,true),dv.getUint32(8,true),dv.getUint32(12,true)],hd=new Float32Array(b.slice(16,40));let o=40;const out=[];
  for(const n of ns){const pos=new Uint16Array(b.slice(o,o+n*6));o+=n*6;const scl=new Uint16Array(b.slice(o,o+n*6));o+=n*6;const qu=new Int8Array(b.slice(o,o+n*4));o+=n*4;const col=new Uint8Array(b.slice(o,o+n*4));o+=n*4;out.push(splatMesh(pos,scl,qu,col,n,false))}
  return{body:out[0],wf:out[1],wr:out[2],cf:new R.Vector3(0,hd[0],hd[1]),cr:new R.Vector3(0,hd[2],hd[3])}}
+
+// pogled iz motorja: isti KTM splat, kot ga vidi voznik
+function splatCockpit(s){const cs=s.body.make(1),G=new R.Group();G.add(cs);G.rotation.y=Math.PI;G.scale.setScalar(.82);G.position.set(0,-1.261,.005);
+ ck.traverse(o=>{if(o.isMesh&&!(o.material&&(o.material.map===dtex||o.material.map===MIR.rt.texture)))o.visible=false});
+ ck.traverse(o=>{if(!o.isMesh||!o.material)return;if(o.material.map===dtex){o.position.set(0,-.112,-.49);o.rotation.set(-.32,0,0);o.scale.setScalar(.62)}
+  else if(o.material.map===MIR.rt.texture){const sd=Math.sign(o.position.x);o.position.set(sd*.318,-.046,-.585);o.rotation.set(.12,sd*-.12,0);o.scale.set(.82,.82,1)}});
+ ck.add(G);window.COCKSPLAT=G}
 async function upgradeSplat(){try{const pl=player;if(!pl.glb)return;const s=await loadSplatBike('models/ktm-splat.bin');
  pl.glb.traverse(o=>{if(o.material){o.material=o.material.clone();o.material.colorWrite=false;o.material.depthWrite=false}});
  for(const w of[pl.wf,pl.wr])w.children.forEach(o=>{if(o.material){o.material=o.material.clone();o.material.colorWrite=false;o.material.depthWrite=false}});
- pl.wf.position.copy(s.cf);pl.wr.position.copy(s.cr);pl.fl.position.set(-.1,.25,-.4);pl.flS=.4;pl.fl.rotation.set(-.1,0,0);pl.body.add(s.body);pl.wf.add(s.wf);pl.wr.add(s.wr);pl.splat=s;window.SPLATOK=1}catch(e){console.log('splat fail',e)}}
+ pl.wf.position.copy(s.cf);pl.wr.position.copy(s.cr);pl.fl.position.set(-.1,.25,-.4);pl.flS=.4;pl.fl.rotation.set(-.1,0,0);pl.body.add(s.body);pl.wf.add(s.wf);pl.wr.add(s.wr);pl.splat=s;window.SPLATOK=1;try{splatCockpit(s)}catch(e){console.log('cock splat fail',e)}}catch(e){console.log('splat fail',e)}}
 
 // letalo: "Low-poly Cessna 172" by reizergideon (CC BY 4.0) z napisom "Vse najboljše Roman!"
 const PLANE={g:null,prop:null,t:-8,anc:null};
